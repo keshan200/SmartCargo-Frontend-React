@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCargo — Logistics Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --or:#FF6B2B;--or2:#FF9060;--orl:#FFF2EB;--orm:#FFD4B8;
+      --wh:#FFFFFF;--bg:#F4F5F9;--tx:#111318;--ts:#5C6070;--tm:#9CA3AF;
+      --bd:#E5E7EF;--r:14px;--r2:20px;
+      --sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.05);
+      --sho:0 8px 28px rgba(255,107,43,.2);
+    }
+    html,body{height:100%;overflow:hidden}
+    body{font-family:'Outfit',sans-serif;font-size:14px;color:var(--tx);background:var(--bg);display:flex}
+
+    /* ─── SIDEBAR ─── */
+    .sb{width:260px;min-height:100vh;background:var(--wh);border-right:1px solid var(--bd);
+      display:flex;flex-direction:column;padding:20px 12px;flex-shrink:0;z-index:10}
+    .logo{display:flex;align-items:center;gap:11px;padding:6px 10px;margin-bottom:28px}
+    .logo-ico{width:42px;height:42px;background:linear-gradient(135deg,var(--or),var(--or2));
+      border-radius:14px;display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:var(--sho);flex-shrink:0}
+    .logo-tx{font-size:18px;font-weight:700;letter-spacing:-.3px}
+    .logo-tx span{color:var(--or)}
+    .nav-sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;
+      color:var(--tm);padding:0 10px;margin:18px 0 6px}
+    .ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r);
+      cursor:pointer;transition:all .18s;color:var(--ts);font-size:13.5px;font-weight:500;
+      margin-bottom:2px;user-select:none;position:relative}
+    .ni svg{flex-shrink:0;opacity:.75}
+    .ni:hover{background:var(--orl);color:var(--or)}
+    .ni:hover svg{opacity:1}
+    .ni.active{background:var(--orl);color:var(--or);font-weight:600}
+    .ni.active svg{opacity:1}
+    .ni.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+      width:3px;height:20px;background:var(--or);border-radius:0 4px 4px 0}
+    .nbadge{margin-left:auto;background:var(--or);color:#fff;font-size:11px;font-weight:600;
+      padding:2px 8px;border-radius:20px}
+    .sb-bot{margin-top:auto;border-top:1px solid var(--bd);padding-top:14px}
+    .urow{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r);
+      cursor:pointer;transition:background .18s}
+    .urow:hover{background:var(--bg)}
+    .av{width:36px;height:36px;background:linear-gradient(135deg,var(--or),var(--or2));
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+    .un{font-size:13px;font-weight:600;color:var(--tx)}
+    .ur{font-size:11px;color:var(--tm)}
+
+    /* ─── MAIN ─── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+    .topbar{background:var(--wh);border-bottom:1px solid var(--bd);padding:13px 28px;
+      display:flex;align-items:center;gap:14px;flex-shrink:0}
+    .pg-title{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .tbr{margin-left:auto;display:flex;align-items:center;gap:10px}
+    .sbox{display:flex;align-items:center;gap:8px;background:var(--bg);
+      border:1px solid var(--bd);border-radius:40px;padding:8px 16px;width:240px}
+    .sbox input{border:none;background:transparent;outline:none;
+      font-family:'Outfit',sans-serif;font-size:13.5px;color:var(--tx);width:100%}
+    .sbox input::placeholder{color:var(--tm)}
+    .icob{width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--wh);
+      display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;position:relative}
+    .icob:hover{background:var(--orl);border-color:var(--orm)}
+    .ndot{position:absolute;top:7px;right:7px;width:8px;height:8px;
+      background:var(--or);border-radius:50%;border:2px solid #fff}
+    .content{flex:1;overflow-y:auto;padding:24px 28px;scroll-behavior:smooth}
+    .page{display:none}
+    .page.active{display:block;animation:fadeUp .25s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+    /* ─── STAT CARDS ─── */
+    .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+    .sc{background:var(--wh);border-radius:var(--r2);padding:22px;box-shadow:var(--sh);
+      border:1px solid var(--bd);position:relative;overflow:hidden;transition:transform .2s}
+    .sc:hover{transform:translateY(-2px)}
+    .sc::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;
+      background:var(--orl);border-radius:50%;opacity:.5}
+    .sc.hero{background:linear-gradient(135deg,var(--or),var(--or2));border:none}
+    .sc.hero::after{background:rgba(255,255,255,.15)}
+    .si{width:42px;height:42px;background:var(--orl);border-radius:12px;
+      display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:14px}
+    .sc.hero .si{background:rgba(255,255,255,.25)}
+    .sv{font-size:28px;font-weight:700;line-height:1;margin-bottom:5px}
+    .sc.hero .sv{color:#fff}
+    .sl{font-size:13px;color:var(--ts);font-weight:500}
+    .sc.hero .sl{color:rgba(255,255,255,.8)}
+    .schg{font-size:12px;margin-top:10px;display:flex;align-items:center;gap:4px;
+      color:#22c55e;font-weight:600}
+    .sc.hero .schg{color:rgba(255,255,255,.9)}
+
+    /* ─── CARDS ─── */
+    .card{background:var(--wh);border-radius:var(--r2);padding:22px;
+      box-shadow:var(--sh);border:1px solid var(--bd)}
+    .ct{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+    .clink{font-size:13px;color:var(--or);cursor:pointer;font-weight:500}
+    .mb18{margin-bottom:18px}
+
+    /* ─── SHIPMENT CARDS (replaces table rows) ─── */
+    .ship-list{display:flex;flex-direction:column;gap:10px}
+    .ship-card{display:flex;align-items:center;gap:14px;padding:14px 16px;
+      background:var(--bg);border-radius:var(--r);border:1px solid var(--bd);
+      transition:all .18s;cursor:pointer}
+    .ship-card:hover{border-color:var(--orm);background:var(--orl);box-shadow:0 2px 12px rgba(255,107,43,.1)}
+    .ship-id{font-size:13px;font-weight:700;color:var(--or);min-width:112px;white-space:nowrap}
+    .ship-route{flex:1;min-width:0}
+    .ship-receiver{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:3px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ship-path{font-size:12px;color:var(--ts);display:flex;align-items:center;gap:6px}
+    .ship-arrow{color:var(--or);font-size:10px}
+    .ship-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+    .ship-wt{font-size:12px;color:var(--ts);background:var(--bg);border:1px solid var(--bd);
+      border-radius:20px;padding:3px 10px;font-weight:500}
+
+    /* ─── CONSIGNMENT CARDS ─── */
+    .con-list{display:flex;flex-direction:column;gap:10px}
+    .con-card{display:flex;align-items:center;gap:16px;padding:14px 18px;
+      background:var(--bg);border-radius:var(--r);border:1px solid var(--bd);
+      transition:all .18s}
+    .con-card:hover{border-color:var(--orm);background:var(--orl)}
+    .con-icon{font-size:28px;flex-shrink:0}
+    .con-body{flex:1;min-width:0}
+    .con-id{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:3px}
+    .con-route{font-size:12.5px;color:var(--ts);display:flex;align-items:center;gap:6px}
+    .con-right{text-align:right;flex-shrink:0}
+    .con-parcels{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:2px}
+    .con-eta{font-size:12px;color:var(--ts)}
+
+    /* ─── BADGES ─── */
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;
+      border-radius:20px;font-size:11.5px;font-weight:600}
+    .badge::before{content:'';width:6px;height:6px;border-radius:50%}
+    .b-d{background:#f0fdf4;color:#16a34a}.b-d::before{background:#16a34a}
+    .b-t{background:#fff7ed;color:var(--or)}.b-t::before{background:var(--or)}
+    .b-p{background:#eff6ff;color:#2563eb}.b-p::before{background:#2563eb}
+    .b-s{background:#faf5ff;color:#7c3aed}.b-s::before{background:#7c3aed}
+    .b-c{background:#fef2f2;color:#dc2626}.b-c::before{background:#dc2626}
+    .b-o{background:#fefce8;color:#ca8a04}.b-o::before{background:#ca8a04}
+
+    /* ─── STATUS LIST ─── */
+    .stl{display:flex;flex-direction:column;gap:14px}
+    .sti{display:flex;align-items:center;gap:12px}
+    .stico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .stlb{font-size:13px;color:var(--ts);font-weight:500;flex:1}
+    .stct{font-size:16px;font-weight:700}
+    .prog{height:5px;background:var(--bd);border-radius:10px;margin-top:4px;overflow:hidden}
+    .progf{height:100%;border-radius:10px}
+
+    /* ─── QUICK ACTIONS ─── */
+    .qg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .qb{display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--bg);
+      border:1px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .18s;
+      font-family:'Outfit',sans-serif;font-size:13px;color:var(--tx);font-weight:500;text-align:left}
+    .qb:hover{background:var(--orl);border-color:var(--orm);color:var(--or)}
+
+    /* ─── DASH GRID ─── */
+    .dg{display:grid;grid-template-columns:1fr 340px;gap:18px}
+
+    /* ─── FILTER BAR ─── */
+    .fb{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+    .fbt{padding:7px 16px;border-radius:40px;border:1px solid var(--bd);background:var(--wh);
+      font-family:'Outfit',sans-serif;font-size:13px;color:var(--ts);font-weight:500;
+      cursor:pointer;transition:all .18s}
+    .fbt:hover,.fbt.active{background:var(--or);border-color:var(--or);color:#fff}
+
+    /* ─── BUTTONS ─── */
+    .bto{background:var(--or);color:#fff;border:none;border-radius:40px;padding:9px 20px;
+      font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+      transition:all .18s;letter-spacing:.1px}
+    .bto:hover{background:#e85c20;box-shadow:var(--sho)}
+
+    /* ─── TRACKING PAGE ─── */
+    .trk-layout{display:grid;grid-template-columns:1fr 320px;gap:18px;height:calc(100vh - 130px)}
+    .map-wrap{border-radius:var(--r2);overflow:hidden;box-shadow:var(--sh);height:100%}
+    #map-full{width:100%;height:100%}
+    .trk-panel{display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+    .trk-box{background:var(--wh);border-radius:var(--r2);padding:20px;box-shadow:var(--sh);border:1px solid var(--bd)}
+    .trk-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--tm);margin-bottom:6px}
+    .trk-val{font-size:22px;font-weight:700;color:var(--tx)}
+    .trk-sub{font-size:12.5px;color:var(--ts);margin-top:2px}
+    .trk-step{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--bd)}
+    .trk-step:last-child{border-bottom:none}
+    .trk-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px}
+    .trk-dot.done{background:#22c55e}
+    .trk-dot.now{background:var(--or);box-shadow:0 0 0 3px rgba(255,107,43,.2);animation:blink 1.6s infinite}
+    .trk-dot.pend{background:var(--bd)}
+    .trk-stxt{font-size:13px;font-weight:600;color:var(--tx)}
+    .trk-stm{font-size:12px;color:var(--ts);margin-top:1px}
+
+    /* ─── FLEET / HUBS ─── */
+    .hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+    .hub-card{background:var(--wh);border-radius:var(--r2);overflow:hidden;
+      border:1px solid var(--bd);box-shadow:var(--sh);transition:all .2s;cursor:pointer}
+    .hub-card:hover{border-color:var(--orm);box-shadow:var(--sho);transform:translateY(-3px)}
+    .hub-map{height:130px;position:relative}
+    .hub-info{padding:16px}
+    .hub-name{font-size:14px;font-weight:700;margin-bottom:3px}
+    .hub-city{font-size:12px;color:var(--ts)}
+    .hub-stats{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+    .hst{font-size:12px;color:var(--ts)}
+    .hst strong{display:block;font-size:15px;font-weight:700;color:var(--tx)}
+
+    /* ─── VEHICLES ─── */
+    .vg{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .vc{background:var(--wh);border-radius:var(--r2);padding:20px;border:1px solid var(--bd);
+      box-shadow:var(--sh);transition:all .2s;cursor:pointer}
+    .vc:hover{border-color:var(--orm);box-shadow:var(--sho);transform:translateY(-2px)}
+    .ve{font-size:32px;margin-bottom:10px}
+    .vn{font-size:15px;font-weight:700;margin-bottom:3px}
+    .vm{font-size:12px;color:var(--ts)}
+    .vb{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+
+    /* ─── USERS ─── */
+    .user-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .user-card{background:var(--wh);border-radius:var(--r2);padding:20px;
+      border:1px solid var(--bd);box-shadow:var(--sh);transition:all .2s;position:relative;overflow:hidden}
+    .user-card:hover{border-color:var(--orm);box-shadow:var(--sho);transform:translateY(-2px)}
+    .user-card::after{content:'';position:absolute;top:-24px;right:-24px;width:72px;height:72px;
+      border-radius:50%;opacity:.4}
+    .uc-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;flex-shrink:0}
+    .uc-name{font-size:14.5px;font-weight:700;color:var(--tx);margin-bottom:4px}
+    .uc-meta{font-size:12px;color:var(--ts);margin-bottom:3px;display:flex;align-items:center;gap:5px}
+    .uc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+      padding-top:12px;border-top:1px solid var(--bd)}
+    .role{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+    .r-admin{background:#faf5ff;color:#7c3aed}
+    .r-driver{background:var(--orl);color:var(--or)}
+    .r-disp{background:#eff6ff;color:#2563eb}
+    .r-cust{background:#f0fdf4;color:#16a34a}
+    .edit-btn{font-size:12.5px;color:var(--or);cursor:pointer;font-weight:600;
+      padding:5px 12px;border-radius:20px;border:1px solid var(--orm);
+      background:var(--orl);transition:all .15s}
+    .edit-btn:hover{background:var(--or);color:#fff}
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:10px}
+
+    /* ─── LEAFLET OVERRIDES ─── */
+    .leaflet-popup-content-wrapper{border-radius:14px!important;font-family:'Outfit',sans-serif!important;box-shadow:0 8px 30px rgba(0,0,0,.13)!important}
+    .leaflet-popup-content{font-family:'Outfit',sans-serif!important;font-size:13px!important}
+    .pop-t{font-size:14px;font-weight:700;margin-bottom:3px}
+    .pop-s{color:var(--or);font-size:12px}
+    .leaflet-control-zoom a{font-family:'Outfit',sans-serif!important}
+
+    /* ─── SHIPMENT PAGE ─── */
+    .ship-full-list{display:flex;flex-direction:column;gap:10px}
+    .ship-full-card{display:flex;align-items:center;gap:16px;padding:16px 20px;
+      background:var(--wh);border-radius:var(--r);border:1px solid var(--bd);
+      box-shadow:var(--sh);transition:all .18s;cursor:pointer}
+    .ship-full-card:hover{border-color:var(--orm);box-shadow:0 4px 20px rgba(255,107,43,.12);transform:translateX(3px)}
+    .sfc-id{font-size:13px;font-weight:700;color:var(--or);min-width:118px}
+    .sfc-body{flex:1;min-width:0}
+    .sfc-recv{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px}
+    .sfc-route{font-size:12.5px;color:var(--ts);display:flex;align-items:center;gap:7px}
+    .sfc-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+    .sfc-wt{font-size:12px;color:var(--ts);background:var(--bg);border:1px solid var(--bd);
+      border-radius:20px;padding:4px 12px;font-weight:500}
+
+    /* ─── TODAY SUMMARY ─── */
+    .today-card{background:linear-gradient(135deg,var(--or),#ff9a6c);border-radius:var(--r2);
+      padding:22px;border:none;box-shadow:var(--sho)}
+    .tc-title{font-size:14px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:16px}
+    .tc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .tc-val{font-size:26px;font-weight:700;color:#fff;line-height:1;margin-bottom:3px}
+    .tc-lbl{font-size:12px;color:rgba(255,255,255,.78)}
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sb">
+  <div class="logo">
+    <div class="logo-ico">🚚</div>
+    <div class="logo-tx">Smart<span>Cargo</span></div>
+  </div>
+
+  <div class="nav-sec">Main Menu</div>
+  <div class="ni active" onclick="go('dashboard',this)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </div>
+  <div class="ni" onclick="go('shipments',this)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Shipments
+    <span class="nbadge">48</span>
+  </div>
+  <div class="ni" onclick="go('tracking',this)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+    Live Tracking
+  </div>
+  <div class="ni" onclick="go('fleet',this)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Fleet &amp; Hubs
+  </div>
+  <div class="ni" onclick="go('users',this)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Users
+  </div>
+
+  <div class="nav-sec">Reports</div>
+  <div class="ni">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analytics
+  </div>
+  <div class="ni">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Reports
+  </div>
+
+  <div class="sb-bot">
+    <div class="urow">
+      <div class="av">AK</div>
+      <div>
+        <div class="un">Ashan Karunaratne</div>
+        <div class="ur">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="pg-title" id="pg-title">Dashboard</div>
+    <div class="tbr">
+      <div class="sbox">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search shipments, users...">
+      </div>
+      <div class="icob">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717A" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="ndot"></div>
+      </div>
+      <div class="icob">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#71717A" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="pg-dashboard">
+
+      <div class="sg">
+        <div class="sc hero">
+          <div class="si">📦</div>
+          <div class="sv">1,284</div>
+          <div class="sl">Total Shipments</div>
+          <div class="schg">↑ 12% this month</div>
+        </div>
+        <div class="sc">
+          <div class="si" style="background:#f0fdf4">✅</div>
+          <div class="sv">892</div>
+          <div class="sl">Delivered</div>
+          <div class="schg">↑ 8% vs last month</div>
+        </div>
+        <div class="sc">
+          <div class="si">🚛</div>
+          <div class="sv">23</div>
+          <div class="sl">Active Vehicles</div>
+          <div class="schg">↑ 3 new this week</div>
+        </div>
+        <div class="sc">
+          <div class="si" style="background:#faf5ff">👥</div>
+          <div class="sv">156</div>
+          <div class="sl">Total Users</div>
+          <div class="schg">↑ 15 new users</div>
+        </div>
+      </div>
+
+      <div class="dg">
+        <div>
+          <!-- Recent Shipments - Card layout -->
+          <div class="card mb18">
+            <div class="ct">
+              Recent Shipments
+              <span class="clink" onclick="go('shipments',document.querySelectorAll('.ni')[1])">View all →</span>
+            </div>
+            <div class="ship-list">
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8821</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Nuwan Perera</div>
+                  <div class="ship-path">Negombo <span class="ship-arrow">▶</span> Colombo</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">4.2 kg</span>
+                  <span class="badge b-t">In Transit</span>
+                </div>
+              </div>
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8820</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Sithara Silva</div>
+                  <div class="ship-path">Kandy <span class="ship-arrow">▶</span> Gampaha</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">1.8 kg</span>
+                  <span class="badge b-d">Delivered</span>
+                </div>
+              </div>
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8819</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Kasun Fernando</div>
+                  <div class="ship-path">Colombo <span class="ship-arrow">▶</span> Galle</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">6.5 kg</span>
+                  <span class="badge b-o">Out for Delivery</span>
+                </div>
+              </div>
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8818</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Thilini Jayasuriya</div>
+                  <div class="ship-path">Ratnapura <span class="ship-arrow">▶</span> Colombo</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">2.1 kg</span>
+                  <span class="badge b-s">Sorting</span>
+                </div>
+              </div>
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8817</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Roshan Bandara</div>
+                  <div class="ship-path">Matara <span class="ship-arrow">▶</span> Colombo</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">3.7 kg</span>
+                  <span class="badge b-p">Picked Up</span>
+                </div>
+              </div>
+              <div class="ship-card">
+                <div class="ship-id">SC-2024-8816</div>
+                <div class="ship-route">
+                  <div class="ship-receiver">Dilani Wickramasinghe</div>
+                  <div class="ship-path">Colombo <span class="ship-arrow">▶</span> Kurunegala</div>
+                </div>
+                <div class="ship-right">
+                  <span class="ship-wt">0.9 kg</span>
+                  <span class="badge b-c">Cancelled</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Consignments - Card layout -->
+          <div class="card">
+            <div class="ct">Active Consignments</div>
+            <div class="con-list">
+              <div class="con-card">
+                <div class="con-icon">🚛</div>
+                <div class="con-body">
+                  <div class="con-id">CON-4421 · NB-2234</div>
+                  <div class="con-route">Negombo <span style="color:var(--or)">▶</span> Colombo</div>
+                </div>
+                <div class="con-right">
+                  <div class="con-parcels">84 parcels</div>
+                  <div class="con-eta">ETA 2:30 PM</div>
+                </div>
+              </div>
+              <div class="con-card">
+                <div class="con-icon">🚐</div>
+                <div class="con-body">
+                  <div class="con-id">CON-4420 · KD-5512</div>
+                  <div class="con-route">Kandy <span style="color:var(--or)">▶</span> Gampaha</div>
+                </div>
+                <div class="con-right">
+                  <div class="con-parcels">37 parcels</div>
+                  <div class="con-eta">ETA 4:15 PM</div>
+                </div>
+              </div>
+              <div class="con-card">
+                <div class="con-icon">🚛</div>
+                <div class="con-body">
+                  <div class="con-id">CON-4419 · MT-8823</div>
+                  <div class="con-route">Matara <span style="color:var(--or)">▶</span> Colombo</div>
+                </div>
+                <div class="con-right">
+                  <div class="con-parcels">112 parcels</div>
+                  <div class="con-eta">ETA 6:00 PM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- Status Overview -->
+          <div class="card">
+            <div class="ct">Shipment Status</div>
+            <div class="stl">
+              <div class="sti">
+                <div class="stico" style="background:#eff6ff">📦</div>
+                <div style="flex:1">
+                  <div class="stlb">Picked Up</div>
+                  <div class="prog"><div class="progf" style="width:30%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div></div>
+                </div>
+                <div class="stct">148</div>
+              </div>
+              <div class="sti">
+                <div class="stico" style="background:#fff7ed">🔄</div>
+                <div style="flex:1">
+                  <div class="stlb">In Transit</div>
+                  <div class="prog"><div class="progf" style="width:55%;background:linear-gradient(90deg,var(--or),var(--or2))"></div></div>
+                </div>
+                <div class="stct">234</div>
+              </div>
+              <div class="sti">
+                <div class="stico" style="background:#faf5ff">🏭</div>
+                <div style="flex:1">
+                  <div class="stlb">Sorting</div>
+                  <div class="prog"><div class="progf" style="width:20%;background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div></div>
+                </div>
+                <div class="stct">89</div>
+              </div>
+              <div class="sti">
+                <div class="stico" style="background:#fefce8">🏍️</div>
+                <div style="flex:1">
+                  <div class="stlb">Out for Delivery</div>
+                  <div class="prog"><div class="progf" style="width:45%;background:linear-gradient(90deg,#ca8a04,#fbbf24)"></div></div>
+                </div>
+                <div class="stct">187</div>
+              </div>
+              <div class="sti">
+                <div class="stico" style="background:#f0fdf4">✅</div>
+                <div style="flex:1">
+                  <div class="stlb">Delivered</div>
+                  <div class="prog"><div class="progf" style="width:80%;background:linear-gradient(90deg,#16a34a,#4ade80)"></div></div>
+                </div>
+                <div class="stct">892</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="ct">Quick Actions</div>
+            <div class="qg">
+              <button class="qb">📋 New Shipment</button>
+              <button class="qb">🔍 Track Parcel</button>
+              <button class="qb">📦 New Consignment</button>
+              <button class="qb">👤 Add Driver</button>
+            </div>
+          </div>
+
+          <!-- Today Summary -->
+          <div class="today-card">
+            <div class="tc-title">Today's Summary</div>
+            <div class="tc-grid">
+              <div><div class="tc-val">42</div><div class="tc-lbl">Delivered Today</div></div>
+              <div><div class="tc-val">18</div><div class="tc-lbl">Out for Delivery</div></div>
+              <div><div class="tc-val">7</div><div class="tc-lbl">Active Runs</div></div>
+              <div><div class="tc-val">96%</div><div class="tc-lbl">On-Time Rate</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /dashboard -->
+
+    <!-- ══ SHIPMENTS ══ -->
+    <div class="page" id="pg-shipments">
+      <div class="fb">
+        <button class="fbt active" onclick="setFilter(this)">All</button>
+        <button class="fbt" onclick="setFilter(this)">In Transit</button>
+        <button class="fbt" onclick="setFilter(this)">Out for Delivery</button>
+        <button class="fbt" onclick="setFilter(this)">Delivered</button>
+        <button class="fbt" onclick="setFilter(this)">Sorting</button>
+        <button class="fbt" onclick="setFilter(this)">Cancelled</button>
+        <div style="margin-left:auto"><button class="bto">+ New Shipment</button></div>
+      </div>
+      <div class="ship-full-list">
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8821</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Nuwan Perera</div>
+            <div class="sfc-route">Negombo <span style="color:var(--or)">▶</span> Colombo</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">4.2 kg</span><span class="badge b-t">In Transit</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8820</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Sithara Silva</div>
+            <div class="sfc-route">Kandy <span style="color:var(--or)">▶</span> Gampaha</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">1.8 kg</span><span class="badge b-d">Delivered</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8819</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Kasun Fernando</div>
+            <div class="sfc-route">Colombo <span style="color:var(--or)">▶</span> Galle</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">6.5 kg</span><span class="badge b-o">Out for Delivery</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8818</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Thilini Jayasuriya</div>
+            <div class="sfc-route">Ratnapura <span style="color:var(--or)">▶</span> Colombo</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">2.1 kg</span><span class="badge b-s">Sorting</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8817</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Roshan Bandara</div>
+            <div class="sfc-route">Matara <span style="color:var(--or)">▶</span> Colombo</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">3.7 kg</span><span class="badge b-p">Picked Up</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8816</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Dilani Wickramasinghe</div>
+            <div class="sfc-route">Colombo <span style="color:var(--or)">▶</span> Kurunegala</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">0.9 kg</span><span class="badge b-c">Cancelled</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8815</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Priya Samarasinghe</div>
+            <div class="sfc-route">Gampaha <span style="color:var(--or)">▶</span> Kandy</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">2.8 kg</span><span class="badge b-d">Delivered</span></div>
+        </div>
+        <div class="ship-full-card">
+          <div class="sfc-id">SC-2024-8814</div>
+          <div class="sfc-body">
+            <div class="sfc-recv">Chaminda Ranasinghe</div>
+            <div class="sfc-route">Galle <span style="color:var(--or)">▶</span> Colombo</div>
+          </div>
+          <div class="sfc-right"><span class="sfc-wt">5.1 kg</span><span class="badge b-t">In Transit</span></div>
+        </div>
+      </div>
+    </div><!-- /shipments -->
+
+    <!-- ══ TRACKING ══ -->
+    <div class="page" id="pg-tracking">
+      <div class="trk-layout">
+        <div class="map-wrap">
+          <div id="map-full"></div>
+        </div>
+        <div class="trk-panel">
+          <div class="trk-box">
+            <div class="trk-label">Active Shipment</div>
+            <div style="font-size:18px;font-weight:700;color:var(--or);margin-bottom:2px">SC-2024-8821</div>
+            <div style="font-size:13px;color:var(--ts)">84 Parcels · CON-4421</div>
+          </div>
+          <div class="trk-box">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div class="trk-label">Current Location</div>
+                <div class="trk-val" id="cur-loc">Wattala</div>
+                <div class="trk-sub">Near highway junction</div>
+              </div>
+              <div>
+                <div class="trk-label">Distance Left</div>
+                <div class="trk-val" id="dist-left">12 km</div>
+                <div class="trk-sub">ETA 2:30 PM</div>
+              </div>
+              <div>
+                <div class="trk-label">Speed</div>
+                <div class="trk-val"><span id="speed-val">54</span> <span style="font-size:14px;font-weight:500;color:var(--ts)">km/h</span></div>
+              </div>
+              <div>
+                <div class="trk-label">Vehicle</div>
+                <div class="trk-val" style="font-size:17px">🚛 NB-2234</div>
+              </div>
+            </div>
+          </div>
+          <div class="trk-box">
+            <div class="ct" style="margin-bottom:14px">Route Progress</div>
+            <div class="trk-step"><div class="trk-dot done"></div><div><div class="trk-stxt">Negombo SC</div><div class="trk-stm">Departed 9:15 AM</div></div></div>
+            <div class="trk-step"><div class="trk-dot done"></div><div><div class="trk-stxt">Katunayake Area</div><div class="trk-stm">Passed 10:02 AM</div></div></div>
+            <div class="trk-step"><div class="trk-dot done"></div><div><div class="trk-stxt">Ja-Ela</div><div class="trk-stm">Passed 10:44 AM</div></div></div>
+            <div class="trk-step"><div class="trk-dot now"></div><div><div class="trk-stxt">Wattala</div><div class="trk-stm">Currently here</div></div></div>
+            <div class="trk-step"><div class="trk-dot pend"></div><div><div class="trk-stxt">Kelaniya</div><div class="trk-stm">~15 min away</div></div></div>
+            <div class="trk-step"><div class="trk-dot pend"></div><div><div class="trk-stxt">Colombo Main Hub</div><div class="trk-stm">ETA 2:30 PM</div></div></div>
+          </div>
+          <div class="trk-box">
+            <div class="trk-label">Driver</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+              <div class="av" style="width:42px;height:42px;font-size:14px">CJ</div>
+              <div>
+                <div style="font-size:14px;font-weight:700">Chamara Jayawickrama</div>
+                <div style="font-size:12.5px;color:var(--ts)">+94 77 123 4567</div>
+              </div>
+              <div style="margin-left:auto">
+                <button class="bto" style="padding:7px 16px;font-size:12px">📞 Call</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /tracking -->
+
+    <!-- ══ FLEET & HUBS ══ -->
+    <div class="page" id="pg-fleet">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div style="font-size:16px;font-weight:700">Hubs &amp; Sorting Centers</div>
+        <button class="bto">+ Add Hub</button>
+      </div>
+
+      <div class="hub-grid">
+        <!-- Each card has an embedded mini map -->
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-colombo"></div>
+          <div class="hub-info">
+            <div class="hub-name">Colombo Main Hub</div>
+            <div class="hub-city">Colombo 10, Western Province</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>342</strong>Parcels</div>
+              <div class="hst"><strong>12</strong>Vehicles</div>
+              <div class="hst"><strong>8</strong>Drivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-negombo"></div>
+          <div class="hub-info">
+            <div class="hub-name">Negombo Sorting Center</div>
+            <div class="hub-city">Negombo, Western Province</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>128</strong>Parcels</div>
+              <div class="hst"><strong>6</strong>Vehicles</div>
+              <div class="hst"><strong>4</strong>Drivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-kandy"></div>
+          <div class="hub-info">
+            <div class="hub-name">Kandy Regional Hub</div>
+            <div class="hub-city">Kandy, Central Province</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>87</strong>Parcels</div>
+              <div class="hst"><strong>4</strong>Vehicles</div>
+              <div class="hst"><strong>3</strong>Drivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-galle"></div>
+          <div class="hub-info">
+            <div class="hub-name">Galle Sorting Center</div>
+            <div class="hub-city">Galle, Southern Province</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>54</strong>Parcels</div>
+              <div class="hst"><strong>3</strong>Vehicles</div>
+              <div class="hst"><strong>2</strong>Drivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-matara"></div>
+          <div class="hub-info">
+            <div class="hub-name">Matara Hub</div>
+            <div class="hub-city">Matara, Southern Province</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>41</strong>Parcels</div>
+              <div class="hst"><strong>2</strong>Vehicles</div>
+              <div class="hst"><strong>2</strong>Drivers</div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-card">
+          <div class="hub-map" id="hmap-kurunegala"></div>
+          <div class="hub-info">
+            <div class="hub-name">Kurunegala SC</div>
+            <div class="hub-city">Kurunegala, North Western</div>
+            <div class="hub-stats">
+              <div class="hst"><strong>33</strong>Parcels</div>
+              <div class="hst"><strong>2</strong>Vehicles</div>
+              <div class="hst"><strong>1</strong>Driver</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:16px;font-weight:700">Vehicle Fleet</div>
+        <button class="bto">+ Add Vehicle</button>
+      </div>
+
+      <div class="vg">
+        <div class="vc"><div class="ve">🚛</div><div class="vn">NB-2234</div><div class="vm">Truck · 1200 kg capacity</div><div class="vb"><span class="badge b-t">On Trip</span><span style="font-size:12px;color:var(--ts)">Negombo → Colombo</span></div></div>
+        <div class="vc"><div class="ve">🚐</div><div class="vn">KD-5512</div><div class="vm">Van · 400 kg capacity</div><div class="vb"><span class="badge b-t">On Trip</span><span style="font-size:12px;color:var(--ts)">Kandy → Gampaha</span></div></div>
+        <div class="vc"><div class="ve">🏍️</div><div class="vn">CB-1134</div><div class="vm">Bike · 30 kg capacity</div><div class="vb"><span class="badge b-d">Active</span><span style="font-size:12px;color:var(--ts)">Colombo City</span></div></div>
+        <div class="vc"><div class="ve">🚛</div><div class="vn">MT-8823</div><div class="vm">Truck · 1200 kg capacity</div><div class="vb"><span class="badge b-t">On Trip</span><span style="font-size:12px;color:var(--ts)">Matara → Colombo</span></div></div>
+        <div class="vc"><div class="ve">🚐</div><div class="vn">GL-3341</div><div class="vm">Van · 400 kg capacity</div><div class="vb"><span class="badge b-d">Active</span><span style="font-size:12px;color:var(--ts)">Galle Area</span></div></div>
+        <div class="vc"><div class="ve">🏍️</div><div class="vn">CB-9920</div><div class="vm">Bike · 30 kg capacity</div><div class="vb"><span class="badge b-c">Maintenance</span><span style="font-size:12px;color:var(--ts)">In Garage</span></div></div>
+      </div>
+    </div><!-- /fleet -->
+
+    <!-- ══ USERS ══ -->
+    <div class="page" id="pg-users">
+      <div class="fb">
+        <button class="fbt active" onclick="setFilter(this)">All Users</button>
+        <button class="fbt" onclick="setFilter(this)">Admins</button>
+        <button class="fbt" onclick="setFilter(this)">Dispatchers</button>
+        <button class="fbt" onclick="setFilter(this)">Drivers</button>
+        <button class="fbt" onclick="setFilter(this)">Customers</button>
+        <div style="margin-left:auto"><button class="bto">+ Add User</button></div>
+      </div>
+
+      <div class="user-grid">
+        <!-- Admin -->
+        <div class="user-card" style="--uc:#7c3aed">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#FF6B2B,#FF9060)">AK</div>
+            <span class="role r-admin">Admin</span>
+          </div>
+          <div class="uc-name">Ashan Karunaratne</div>
+          <div class="uc-meta">✉️ ashan@smartcargo.lk</div>
+          <div class="uc-meta">📞 +94 77 123 4560</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-d" style="padding:3px 9px">Active</span>
+              <span style="font-size:12px;color:var(--ts)">All Hubs</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Dispatcher -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#2563eb,#60a5fa)">DP</div>
+            <span class="role r-disp">Dispatcher</span>
+          </div>
+          <div class="uc-name">Dinesh Perera</div>
+          <div class="uc-meta">✉️ dinesh@smartcargo.lk</div>
+          <div class="uc-meta">📞 +94 71 234 5678</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-d" style="padding:3px 9px">Active</span>
+              <span style="font-size:12px;color:var(--ts)">Colombo Hub</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Driver -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#FF6B2B,#FF9060)">CJ</div>
+            <span class="role r-driver">Driver</span>
+          </div>
+          <div class="uc-name">Chamara Jayawickrama</div>
+          <div class="uc-meta">✉️ chamara@smartcargo.lk</div>
+          <div class="uc-meta">📞 +94 77 123 4567</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-t" style="padding:3px 9px">On Trip</span>
+              <span style="font-size:12px;color:var(--ts)">Negombo SC</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Customer -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#16a34a,#4ade80)">NP</div>
+            <span class="role r-cust">Customer</span>
+          </div>
+          <div class="uc-name">Nuwan Perera</div>
+          <div class="uc-meta">✉️ nuwan@gmail.com</div>
+          <div class="uc-meta">📞 +94 70 987 6543</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-d" style="padding:3px 9px">Active</span>
+              <span style="font-size:12px;color:var(--ts)">—</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Dispatcher 2 -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">SK</div>
+            <span class="role r-disp">Dispatcher</span>
+          </div>
+          <div class="uc-name">Sanduni Kumari</div>
+          <div class="uc-meta">✉️ sanduni@smartcargo.lk</div>
+          <div class="uc-meta">📞 +94 76 543 2109</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-d" style="padding:3px 9px">Active</span>
+              <span style="font-size:12px;color:var(--ts)">Kandy Hub</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Driver 2 -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#ca8a04,#fbbf24)">RD</div>
+            <span class="role r-driver">Driver</span>
+          </div>
+          <div class="uc-name">Rajan De Silva</div>
+          <div class="uc-meta">✉️ rajan@smartcargo.lk</div>
+          <div class="uc-meta">📞 +94 77 889 0011</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-o" style="padding:3px 9px">On Leave</span>
+              <span style="font-size:12px;color:var(--ts)">Galle Hub</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+
+        <!-- Customer 2 -->
+        <div class="user-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="uc-av" style="background:linear-gradient(135deg,#dc2626,#f87171)">HR</div>
+            <span class="role r-cust">Customer</span>
+          </div>
+          <div class="uc-name">Harini Rathnayake</div>
+          <div class="uc-meta">✉️ harini@gmail.com</div>
+          <div class="uc-meta">📞 +94 77 445 6789</div>
+          <div class="uc-foot">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span class="badge b-d" style="padding:3px 9px">Active</span>
+              <span style="font-size:12px;color:var(--ts)">—</span>
+            </div>
+            <span class="edit-btn">Edit</span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /users -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── NAVIGATION ──
+const titles = { dashboard:'Dashboard', shipments:'Shipments', tracking:'Live Tracking', fleet:'Fleet & Hubs', users:'User Management' };
+
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('pg-' + id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('pg-title').textContent = titles[id] || id;
+  if (id === 'tracking' && !mapReady) setTimeout(initMap, 120);
+  if (id === 'fleet' && !hubMapsReady) setTimeout(initHubMaps, 120);
+}
+
+function setFilter(btn) {
+  btn.closest('.fb').querySelectorAll('.fbt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── MAIN TRACKING MAP ──
+let mapReady = false;
+let leafMap = null;
+let vehicleMkr = null;
+
+const route = [
+  [7.2084, 79.8369],
+  [7.1600, 79.8540],
+  [7.0732, 79.8914],
+  [6.9897, 79.8880],
+  [6.9650, 79.8760],
+  [6.9271, 79.8612],
+];
+const locationNames = ['Negombo','Katunayake Area','Ja-Ela','Wattala','Kelaniya','Colombo'];
+const distanceLeft  = ['42 km','34 km','22 km','12 km','6 km','0 km'];
+const speeds = [52,58,47,54,60,0];
+
+function initMap() {
+  if (mapReady) return;
+  mapReady = true;
+  leafMap = L.map('map-full',{zoomControl:true}).setView([7.08,79.87],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(leafMap);
+  L.polyline(route,{color:'#FFD4B8',weight:5,opacity:.7,dashArray:'8 6'}).addTo(leafMap);
+  L.polyline(route.slice(0,4),{color:'#22c55e',weight:5,opacity:.9}).addTo(leafMap);
+  L.marker(route[0],{icon:L.divIcon({html:`<div style="width:14px;height:14px;background:#22c55e;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.25)"></div>`,className:'',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(leafMap).bindPopup(`<div class="pop-t">📍 Negombo Sorting Center</div><div class="pop-s">Origin · Departed 9:15 AM</div>`);
+  L.marker(route[5],{icon:L.divIcon({html:`<div style="width:14px;height:14px;background:white;border-radius:50%;border:3px solid #FF6B2B;box-shadow:0 2px 8px rgba(255,107,43,.4)"></div>`,className:'',iconSize:[14,14],iconAnchor:[7,7]})}).addTo(leafMap).bindPopup(`<div class="pop-t">🏁 Colombo Main Hub</div><div class="pop-s">Destination · ETA 2:30 PM</div>`);
+  const vIcon = L.divIcon({html:`<div style="position:relative;width:40px;height:40px"><div style="width:40px;height:40px;background:linear-gradient(135deg,#FF6B2B,#FF9060);border-radius:50%;border:3px solid white;box-shadow:0 4px 16px rgba(255,107,43,.45);display:flex;align-items:center;justify-content:center;font-size:17px">🚛</div><div style="position:absolute;top:-2px;right:-2px;width:11px;height:11px;background:#22c55e;border-radius:50%;border:2px solid white;animation:blink 1.4s infinite"></div></div>`,className:'',iconSize:[40,40],iconAnchor:[20,20]});
+  vehicleMkr = L.marker(route[3],{icon:vIcon}).addTo(leafMap).bindPopup(`<div class="pop-t">🚛 Vehicle NB-2234</div><div class="pop-s">SC-2024-8821 · Near Wattala · 54 km/h</div>`).openPopup();
+  leafMap.fitBounds(L.latLngBounds(route),{padding:[44,44]});
+  animateSegment(3);
+}
+
+function animateSegment(from) {
+  if (from >= route.length - 1) { setTimeout(() => animateSegment(3), 3000); return; }
+  const start = route[from], end = route[from+1];
+  const dur = 9000 + Math.random()*4000, t0 = Date.now();
+  function tick() {
+    const p = Math.min((Date.now()-t0)/dur,1);
+    vehicleMkr.setLatLng([start[0]+(end[0]-start[0])*p, start[1]+(end[1]-start[1])*p]);
+    const locEl=document.getElementById('cur-loc'), distEl=document.getElementById('dist-left'), spdEl=document.getElementById('speed-val');
+    if(locEl) locEl.textContent=locationNames[from+1]||'Colombo';
+    if(distEl) distEl.textContent=distanceLeft[from+1]||'0 km';
+    if(spdEl) spdEl.textContent=speeds[from];
+    if(p<1) requestAnimationFrame(tick); else setTimeout(()=>animateSegment(from+1),600);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── HUB MINI MAPS ──
+let hubMapsReady = false;
+
+const hubs = [
+  { id:'hmap-colombo',   lat:6.9271, lng:79.8612, name:'Colombo Main Hub' },
+  { id:'hmap-negombo',   lat:7.2084, lng:79.8369, name:'Negombo Sorting Center' },
+  { id:'hmap-kandy',     lat:7.2906, lng:80.6337, name:'Kandy Regional Hub' },
+  { id:'hmap-galle',     lat:6.0535, lng:80.2209, name:'Galle Sorting Center' },
+  { id:'hmap-matara',    lat:5.9485, lng:80.5353, name:'Matara Hub' },
+  { id:'hmap-kurunegala',lat:7.4868, lng:80.3647, name:'Kurunegala SC' },
+];
+
+function initHubMaps() {
+  if (hubMapsReady) return;
+  hubMapsReady = true;
+
+  hubs.forEach(h => {
+    const m = L.map(h.id, {
+      zoomControl: false,
+      dragging: false,
+      touchZoom: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      attributionControl: false,
+    }).setView([h.lat, h.lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(m);
+
+    L.marker([h.lat, h.lng], {
+      icon: L.divIcon({
+        html: `<div style="width:18px;height:18px;background:linear-gradient(135deg,#FF6B2B,#FF9060);border-radius:50%;border:3px solid white;box-shadow:0 2px 10px rgba(255,107,43,.5)"></div>`,
+        className: '', iconSize:[18,18], iconAnchor:[9,9]
+      })
+    }).addTo(m).bindPopup(`<div class="pop-t">🏭 ${h.name}</div>`);
+
+    // Force map to render correctly after layout
+    setTimeout(() => m.invalidateSize(), 300);
+  });
+}
+</script>
+</body>
+</html>
