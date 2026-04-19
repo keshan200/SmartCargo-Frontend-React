@@ -9,7 +9,7 @@ const alerts = [
 
 const Navbar = () => {
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 shadow-sm">
+    <nav className="sticky top-0 z-50 w-full bg-white ">
       <div className="flex items-center justify-end px-6 h-14">
 
         {/* ── Right: Search + Bell + Settings ── */}
