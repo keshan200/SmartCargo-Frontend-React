@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./pages/Layout";
 import CargoMap from "./components/Map";
 import HubPage from "./pages/HubPage";
+import ShipmentPage from "./pages/ship";
 
 
 
@@ -27,7 +28,9 @@ const router = createBrowserRouter([
          element:<AdminRoutes />,
          children:[
         
-            {path:"/dashboard", element: <HubPage />},
+            {path:"/dashboard", element: <Dashboard />},
+            {path:"/hubs", element: <HubPage />},
+            {path:"/shipments", element: <ShipmentPage />},
 
          
          ]

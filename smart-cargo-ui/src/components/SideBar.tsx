@@ -1,11 +1,13 @@
 import { FenceIcon } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 type NavItem = {
   id: string;
   label: string;
   icon: React.ReactNode;
   badge?: number;
+  path:string
 };
 
 const LayoutDashboard = () => (
@@ -81,17 +83,17 @@ const FileTextIcon = () => (
 
 
 const mainMenuItems: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard /> },
-  { id: "shipments", label: "Shipments", icon: <PackageIcon />, badge: 48 },
-  { id: "tracking", label: "Live Tracking", icon: <TrackingIcon /> },
-  { id: "fleet", label: "Fleet ", icon: <FleetIcon /> },
-  { id: "hubs", label: " Hubs", icon: <HubsIcon /> },
-  { id: "users", label: "Users", icon: <UsersIcon /> },
+  { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard /> ,path:"/dashboard"},
+  { id: "shipments", label: "Shipments", icon: <PackageIcon />, badge: 48 ,path:"/shipments"},
+  { id: "tracking", label: "Live Tracking", icon: <TrackingIcon />, path:"/tracking"},
+  { id: "fleet", label: "Fleet ", icon: <FleetIcon />, path:"/fleet"},
+  { id: "hubs", label: " Hubs", icon: <HubsIcon />, path:"/hubs"},
+  { id: "users", label: "Users", icon: <UsersIcon />, path:"/users"},
 ];
 
 const reportItems: NavItem[] = [
-  { id: "analytics", label: "Analytics", icon: <BarChartIcon /> },
-  { id: "reports", label: "Reports", icon: <FileTextIcon /> },
+  { id: "analytics", label: "Analytics", icon: <BarChartIcon /> ,path:"/analytics"},
+  { id: "reports", label: "Reports", icon: <FileTextIcon />, path:"/reports" },
 ];
 
 type NavButtonProps = {
@@ -102,17 +104,17 @@ type NavButtonProps = {
 
 const NavButton = ({ item, isActive, onClick }: NavButtonProps) => (
   <li>
-    <button
+    <Link
       onClick={onClick}
       className={`
         group flex w-full items-center gap-3 rounded-2xl px-4 py-3
         text-base transition-all duration-200 cursor-pointer
         ${isActive
           ? "bg-orange-50 text-orange-500"
-          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-        }
+          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"}
       `}
       style={{ fontWeight: isActive ? 600 : 500 }}
+      to={item.path}  
     >
       <span
         className={`flex items-center flex-shrink-0 transition-all duration-200 ${
@@ -130,12 +132,13 @@ const NavButton = ({ item, isActive, onClick }: NavButtonProps) => (
           {item.badge}
         </span>
       )}
-    </button>
+    </Link>
   </li>
 );
 
 const Sidebar = () => {
   const [active, setActive] = useState("dashboard");
+  
 
   return (
     <div
