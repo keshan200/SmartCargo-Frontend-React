@@ -1,19 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Hub, ModalMode } from "../types/Hubs";
 import { HubCard } from "../components/Hub/HubCard";
 import { HubModal } from "../components/Hub/HubModal";
-
-const mockHubs: Hub[] = [
-  { _id: "1", hub_name: "Colombo Central Hub", city: "Colombo", address: "123 Main Street, Colombo 01", contact_no: "+94 11 234 5678", latitude: 6.9271, longitude: 79.8612, createdAt: "2024-01-15" },
-  { _id: "2", hub_name: "Kandy Distribution Hub", city: "Kandy", address: "45 Temple Road, Kandy", contact_no: "+94 81 220 3344", latitude: 7.2906, longitude: 80.6337, createdAt: "2024-02-20" },
-  { _id: "3", hub_name: "Galle Southern Hub", city: "Galle", address: "78 Harbour View, Galle Fort", contact_no: "+94 91 222 1199", latitude: 6.0535, longitude: 80.221, createdAt: "2024-03-10" },
-  { _id: "4", hub_name: "Jaffna Northern Hub", city: "Jaffna", address: "12 Stanley Road, Jaffna", contact_no: "+94 21 222 5566", latitude: 9.6615, longitude: 80.0255, createdAt: "2024-03-28" },
-];
+import { createHub, getAllHubs, updateHub } from "../services/hub.service";
+import toast from "react-hot-toast";
 
 const emptyHub: Hub = { _id:"",hub_name: "", city: "", address: "", contact_no: "", latitude: 0, longitude: 0 };
 
 export default function HubPage() {
-  const [hubs, setHubs] = useState<Hub[]>(mockHubs);
+  const [hubs, setHubs] = useState<Hub[]>([]);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedHub, setSelectedHub] = useState<Hub>(emptyHub);
   const [search, setSearch] = useState("");
@@ -21,11 +16,15 @@ export default function HubPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof Hub, string>>>({});
   const [mapStep, setMapStep] = useState(false);
 
+
+
   const filtered = hubs.filter(
     (h) =>
       h.hub_name.toLowerCase().includes(search.toLowerCase()) ||
       h.city.toLowerCase().includes(search.toLowerCase())
   );
+
+
 
   const validateStep1 = () => {
     const e: Partial<Record<keyof Hub, string>> = {};
@@ -37,18 +36,61 @@ export default function HubPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSave = () => {
-    if (!selectedHub.latitude || !selectedHub.longitude) {
-      setErrors((e) => ({ ...e, latitude: "Please pin a location on the map" }));
-      return;
+
+
+
+
+
+  const fetchHubs = async () => {
+    try {
+    
+      const data = await getAllHubs();
+      setHubs(data);
+    } catch (error) {
+      console.error("Error fetching hubs:", error);
+    } finally {
+      
     }
+  };
+
+  useEffect(() => {
+    fetchHubs();
+  }, []);
+
+
+const handleSave = async () => {
+  
+  if (!selectedHub.latitude || !selectedHub.longitude) {
+    setErrors((e) => ({ ...e, latitude: "Please pin a location on the map" }));
+    toast.error("Location not set on map!");
+    return;
+  }
+
+  try {
     if (modalMode === "add") {
-      setHubs([...hubs, { ...selectedHub, _id: Date.now().toString(), createdAt: new Date().toISOString().split("T")[0] }]);
-    } else {
-      setHubs(hubs.map((h) => (h._id === selectedHub._id ? selectedHub : h)));
+
+      const newHub = await createHub(selectedHub);
+
+      console.log("Created Hub:", newHub);
+      setHubs((prev) => [...prev, newHub]);
+      toast.success("Hub created successfully!");
+
+    } else if (modalMode === "edit" && selectedHub._id) {
+
+      const updated = await updateHub(selectedHub._id, selectedHub);
+      setHubs((prev) => prev.map((h) => (h._id === updated._id ? updated : h)));
+      toast.success("Hub updated successfully!");
+
     }
     closeModal();
-  };
+
+  } catch (error) {
+
+    console.error("Failed to save hub:", error);
+    toast.error("Failed to save to database!");
+
+  }
+};
 
   const closeModal = () => { setModalMode(null); setErrors({}); setMapStep(false); };
   const openModal = (mode: ModalMode, hub?: Hub) => {

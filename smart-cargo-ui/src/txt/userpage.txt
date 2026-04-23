@@ -1,0 +1,446 @@
+import { useState, useEffect } from "react";
+import type { EmployeeFormData, UserFormData } from "../types/User";
+
+type Role = "CUSTOMER" | "ADMIN" | "EMPLOYEE" | "MANAGER" | "";
+
+interface Hub {
+  id: string;
+  name: string;
+  location: string;
+}
+
+
+
+const MOCK_HUBS: Hub[] = [
+  { id: "69d7cdf69705111aa65ebc69", name: "Colombo Central Hub", location: "Colombo 01" },
+  { id: "69d7cdf69705111aa65ebc70", name: "Kandy Distribution Hub", location: "Kandy" },
+  { id: "69d7cdf69705111aa65ebc71", name: "Galle Southern Hub", location: "Galle" },
+  { id: "69d7cdf69705111aa65ebc72", name: "Negombo North Hub", location: "Negombo" },
+  { id: "69d7cdf69705111aa65ebc73", name: "Jaffna Hub", location: "Jaffna" },
+];
+
+const EMPLOYEE_ROLES: Role[] = ["EMPLOYEE", "MANAGER"];
+
+export default function AddUserPage() {
+  const [userForm, setUserForm] = useState<UserFormData>({
+    full_name: "",
+    email: "",
+    password: "",
+    phone_number: "",
+    role: "",
+  });
+
+  const [employeeForm, setEmployeeForm] = useState<EmployeeFormData>({
+    assigned_hub_id: "",
+    license_number: "",
+    status: "ACTIVE",
+  });
+
+  const [hubs, setHubs] = useState<Hub[]>([]);
+  const [loadingHubs, setLoadingHubs] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isEmployee = EMPLOYEE_ROLES.includes(userForm.role);
+
+  useEffect(() => {
+    if (isEmployee) {
+      setLoadingHubs(true);
+      // Simulate API call to load hubs
+      setTimeout(() => {
+        setHubs(MOCK_HUBS);
+        setLoadingHubs(false);
+      }, 800);
+    } else {
+      setHubs([]);
+      setEmployeeForm({ assigned_hub_id: "", license_number: "", status: "ACTIVE" });
+    }
+  }, [isEmployee]);
+
+  const handleUserChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setUserForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEmployeeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEmployeeForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise((res) => setTimeout(res, 1200));
+    setIsSubmitting(false);
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  const handleReset = () => {
+    setUserForm({ full_name: "", email: "", password: "", phone_number: "", role: "" });
+    setEmployeeForm({ assigned_hub_id: "", license_number: "", status: "ACTIVE" });
+    setSubmitted(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+     
+
+      <main className="max-w-7xl mx-auto px-6 py-10 ">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-900">Add New User</h1>
+          <p className="text-sm text-gray-400 mt-1">
+            Create a user account. For employee or manager roles, additional details will be required.
+          </p>
+        </div>
+
+        {/* Success Banner */}
+        {submitted && (
+          <div className="mb-6 flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3">
+            <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <p className="text-sm text-orange-700 font-medium">User created successfully!</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* LEFT: Main Form */}
+            <div className="lg:col-span-2 space-y-6">
+
+              {/* Account Information Card */}
+              <section className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <circle cx="7" cy="4.5" r="2.5" stroke="#F97316" strokeWidth="1.3"/>
+                      <path d="M1.5 12c0-2.2 2.5-3.5 5.5-3.5s5.5 1.3 5.5 3.5" stroke="#F97316" strokeWidth="1.3" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <h2 className="text-sm font-semibold text-gray-800">Account Information</h2>
+                </div>
+
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Full Name */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                      Full Name <span className="text-orange-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="full_name"
+                      value={userForm.full_name}
+                      onChange={handleUserChange}
+                      placeholder="e.g. Kashan Perera"
+                      required
+                      className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                      Email Address <span className="text-orange-400">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={userForm.email}
+                      onChange={handleUserChange}
+                      placeholder="user@example.com"
+                      required
+                      className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                      Phone Number <span className="text-orange-400">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      value={userForm.phone_number}
+                      onChange={handleUserChange}
+                      placeholder="+94 76 449 8xx7"
+                      required
+                      className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                      Password <span className="text-orange-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={userForm.password}
+                        onChange={handleUserChange}
+                        placeholder="Min. 8 characters"
+                        required
+                        minLength={8}
+                        className="w-full px-4 py-2.5 pr-10 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-orange-400 transition-colors"
+                      >
+                        {showPassword ? (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 2l12 12M6.5 6.6A2 2 0 0111 8m-4.5 2.8A2 2 0 015 8c0-.2 0-.4.1-.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                            <path d="M3 9.5C1.5 8.5 1 8 1 8s2.5-5 7-5c1 0 1.9.2 2.7.6M13 9.5c1-.9 2-2 2-1.5 0 0-2.5 5-7 5-1 0-1.9-.2-2.7-.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.3"/>
+                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                      Role <span className="text-orange-400">*</span>
+                    </label>
+                    <select
+                      name="role"
+                      value={userForm.role}
+                      onChange={handleUserChange}
+                      required
+                      className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">Select a role</option>
+                      <option value="CUSTOMER">Customer</option>
+                      <option value="EMPLOYEE">Employee</option>
+                      <option value="MANAGER">Manager</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
+
+              {/* Employee Details Card — conditionally shown */}
+              <div
+                className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                  isEmployee ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <section className="bg-white border border-orange-100 rounded-2xl overflow-hidden">
+                  <div className="px-6 py-4 border-b border-orange-100 bg-orange-50 flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="1.5" y="3" width="11" height="8.5" rx="1.5" stroke="#F97316" strokeWidth="1.3"/>
+                        <path d="M5 3V2a1 1 0 012 0v1M7 3V2a1 1 0 012 0v1" stroke="#F97316" strokeWidth="1.3" strokeLinecap="round"/>
+                        <path d="M4 7h6M4 9h4" stroke="#F97316" strokeWidth="1.3" strokeLinecap="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-orange-700">Employee Details</h2>
+                      <p className="text-xs text-orange-400">Required for employee &amp; manager roles</p>
+                    </div>
+                    <span className="ml-auto px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-600 rounded-lg">
+                      {userForm.role}
+                    </span>
+                  </div>
+
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Hub Assignment */}
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                        Assigned Hub <span className="text-orange-400">*</span>
+                      </label>
+                      {loadingHubs ? (
+                        <div className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-3">
+                          <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-500 rounded-full animate-spin" />
+                          <span className="text-sm text-gray-400">Loading hubs...</span>
+                        </div>
+                      ) : (
+                        <select
+                          name="assigned_hub_id"
+                          value={employeeForm.assigned_hub_id}
+                          onChange={handleEmployeeChange}
+                          required={isEmployee}
+                          className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="">Select a hub</option>
+                          {hubs.map((hub) => (
+                            <option key={hub.id} value={hub.id}>
+                              {hub.name} — {hub.location}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {employeeForm.assigned_hub_id && (
+                        <p className="mt-1.5 text-xs text-gray-400 font-mono">
+                          ID: {employeeForm.assigned_hub_id}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* License Number */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                        License Number <span className="text-orange-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="license_number"
+                        value={employeeForm.license_number}
+                        onChange={handleEmployeeChange}
+                        placeholder="e.g. WP-B-1234567"
+                        required={isEmployee}
+                        className="w-full px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 focus:border-orange-400 transition-all font-mono"
+                      />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">
+                        Status
+                      </label>
+                      <div className="flex gap-3 mt-1">
+                        {(["ACTIVE", "INACTIVE"] as const).map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setEmployeeForm((p) => ({ ...p, status: s }))}
+                            className={`flex-1 py-2.5 text-sm rounded-xl border font-medium transition-all ${
+                              employeeForm.status === s
+                                ? s === "ACTIVE"
+                                  ? "bg-orange-500 border-orange-500 text-white"
+                                  : "bg-gray-100 border-gray-200 text-gray-600"
+                                : "bg-white border-gray-200 text-gray-400 hover:border-gray-300"
+                            }`}
+                          >
+                            {s === "ACTIVE" ? "✓ Active" : "○ Inactive"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            {/* RIGHT: Summary + Actions */}
+            <div className="space-y-5">
+              {/* Role Info Card */}
+              <section className="bg-white border border-gray-100 rounded-2xl p-5 sticky top-24">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Summary</h3>
+
+                <div className="space-y-3">
+                  {[
+                    { label: "Name", value: userForm.full_name || "—" },
+                    { label: "Email", value: userForm.email || "—" },
+                    { label: "Phone", value: userForm.phone_number || "—" },
+                    {
+                      label: "Role",
+                      value: userForm.role || "—",
+                      highlight: !!userForm.role,
+                    },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-start justify-between gap-3">
+                      <span className="text-xs text-gray-400 flex-shrink-0 mt-0.5">{item.label}</span>
+                      <span
+                        className={`text-xs text-right break-all ${
+                          item.highlight
+                            ? "text-orange-500 font-semibold"
+                            : item.value === "—"
+                            ? "text-gray-200"
+                            : "text-gray-700 font-medium"
+                        }`}
+                      >
+                        {item.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {isEmployee && (
+                  <>
+                    <div className="my-4 border-t border-dashed border-orange-100" />
+                    <p className="text-xs text-orange-400 font-medium mb-3 uppercase tracking-wider">Employee Info</p>
+                    <div className="space-y-3">
+                      {[
+                        {
+                          label: "Hub",
+                          value: hubs.find((h) => h.id === employeeForm.assigned_hub_id)?.name || "—",
+                        },
+                        { label: "License", value: employeeForm.license_number || "—" },
+                        { label: "Status", value: employeeForm.status },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-start justify-between gap-3">
+                          <span className="text-xs text-gray-400 flex-shrink-0">{item.label}</span>
+                          <span
+                            className={`text-xs text-right font-medium ${
+                              item.value === "—" ? "text-gray-200" : "text-gray-700"
+                            }`}
+                          >
+                            {item.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <div className="mt-6 space-y-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <path d="M7 1v12M1 7h12" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+                        </svg>
+                        Create User
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="w-full py-2.5 bg-white hover:bg-gray-50 text-gray-400 hover:text-gray-600 text-sm rounded-xl border border-gray-200 transition-all"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </section>
+
+              {/* Tip card */}
+              <div className="bg-orange-50 rounded-2xl p-4 border border-orange-100">
+                <p className="text-xs text-orange-600 font-medium mb-1">Tip</p>
+                <p className="text-xs text-orange-400 leading-relaxed">
+                  Selecting <strong className="font-semibold text-orange-500">Employee</strong> or{" "}
+                  <strong className="font-semibold text-orange-500">Manager</strong> will reveal hub assignment
+                  and license fields below.
+                </p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+  );
+}

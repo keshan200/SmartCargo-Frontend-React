@@ -86,7 +86,7 @@ const mainMenuItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard /> ,path:"/dashboard"},
   { id: "shipments", label: "Shipments", icon: <PackageIcon />, badge: 48 ,path:"/shipments"},
   { id: "tracking", label: "Live Tracking", icon: <TrackingIcon />, path:"/tracking"},
-  { id: "fleet", label: "Fleet ", icon: <FleetIcon />, path:"/fleet"},
+  { id: "vehicle", label: "Vehicle", icon: <FleetIcon />, path:"/vehicle"},
   { id: "hubs", label: " Hubs", icon: <HubsIcon />, path:"/hubs"},
   { id: "users", label: "Users", icon: <UsersIcon />, path:"/users"},
 ];

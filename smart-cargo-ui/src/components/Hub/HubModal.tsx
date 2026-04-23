@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+import { getCoordinates } from "../../services/hub.service";
 import type { Hub, ModalMode } from "../../types/Hubs";
 import CargoMap from "../Map";
 
@@ -19,6 +21,13 @@ interface HubModalProps {
   openModal: (mode: ModalMode, hub?: Hub) => void;
 }
 
+
+
+
+
+
+
+
 export const HubModal = ({
   modalMode, selectedHub, setSelectedHub,
   closeModal, mapStep, setMapStep,
@@ -27,6 +36,28 @@ export const HubModal = ({
   if (!modalMode) return null;
 
   const isWide = mapStep || modalMode === "view";
+
+
+const handleAddressLookup = async () => {
+  
+  if (selectedHub.address && selectedHub.city) {
+    const coords = await getCoordinates(selectedHub.address, selectedHub.city);
+    
+    if (coords) {
+      setSelectedHub(prev => ({
+        ...prev,
+        latitude: coords.lat,
+        longitude: coords.lon
+      }));
+      toast.success("Location found on map!");
+    } else {
+      toast.error("Could not find this location. Please pin it manually.");
+    }
+  }
+};
+
+
+
 
   return (
     <div
@@ -117,8 +148,15 @@ export const HubModal = ({
               </div>
               <div className="col-span-2">
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address *</label>
-                <textarea value={selectedHub.address} onChange={(e) => setSelectedHub((h) => ({ ...h, address: e.target.value }))} placeholder="Full delivery address..." rows={2} className={inputCls(!!errors.address) + " resize-none"} />
-                {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
+                <textarea 
+                    value={selectedHub.address} 
+                    onChange={(e) => setSelectedHub((h) => ({ ...h, address: e.target.value }))} 
+                    placeholder="Full delivery address..." rows={2} 
+                    className={inputCls(!!errors.address) + " resize-none"}
+                    onBlur={handleAddressLookup}
+                    
+                />
+                    {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">

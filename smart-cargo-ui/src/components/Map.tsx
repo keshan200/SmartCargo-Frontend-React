@@ -91,4 +91,4 @@ const CargoMap: React.FC<CargoMapProps> = ({
   );
 };
 
-export default CargoMap;
+export default React.memo(CargoMap);

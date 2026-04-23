@@ -1,5 +1,3 @@
-// src/types/user.ts
-
 export const UserRole = {
   ADMIN: 'ADMIN',
   DISPATCHER: 'DISPATCHER',
@@ -22,5 +20,24 @@ export interface IUser {
 export interface IUserSignup extends Omit<IUser, '_id' | 'createdAt' | 'updatedAt'> {
   password: string;          
 }
+
+
+type Role = "CUSTOMER" | "ADMIN" | "EMPLOYEE" | "MANAGER" | "";
+
+
+export interface UserFormData {
+  full_name: string;
+  email: string;
+  password: string;
+  phone_number: string;
+  role: Role;
+}
+
+export interface EmployeeFormData {
+  assigned_hub_id: string;
+  license_number: string;
+  status: "ACTIVE" | "INACTIVE";
+}
+
 
 export type UserLoginCredentials = Pick<IUser, 'email'> & { password: string };

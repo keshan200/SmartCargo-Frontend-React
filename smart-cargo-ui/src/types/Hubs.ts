@@ -20,5 +20,7 @@ export interface CreateHubDto {
 }
 
 export type UpdateHubDto = Partial<CreateHubDto>;
+
 export type ModalMode = "add" | "edit" | "view" | null;
+
 export type HubFormData = CreateHubDto;
