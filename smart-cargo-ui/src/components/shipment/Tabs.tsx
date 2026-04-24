@@ -8,7 +8,7 @@ import { Success, RightPanel } from "./Rightpanel";
 import { Icon, Label, StatusBadge } from "./Ui";
 
 
-// ─── New Shipment Tab ─────────────────────────────────────────────────────────
+
 export const NewShipmentTab = () => {
   const [step, setStep]             = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -16,15 +16,20 @@ export const NewShipmentTab = () => {
   const [trackingId, setTrackingId] = useState("");
   const [errors, setErrors]         = useState<string[]>([]);
 
-  const [form, setForm] = useState<ShipmentForm>({
-    sender_id: "69de53b1d7389b388eb26a10",
-    receiver_name: "", receiver_email: "", receiver_phone: "",
-    receiver_address: "", receiver_city: "", receiver_postal_code: "",
-    package_type: "PARCEL", weight_kg: "",
-    dimensions: { length: 0, width: 0, height: 0 },
-    service_type: "STANDARD", payment_method: "CASH_ON_DELIVERY",
-    current_hub_id: "", delivery_lat: null, delivery_lng: null,
-  });
+const [form, setForm] = useState<ShipmentForm>({
+  sender_id: "69de53b1d7389b388eb26a10",
+  
+  sender_name: "", sender_email: "", sender_phone: "",
+  sender_address: "", sender_city: "", sender_postal_code: "",
+ 
+  receiver_name: "", receiver_email: "", receiver_phone: "",
+  receiver_address: "", receiver_city: "", receiver_postal_code: "",
+
+  package_type: "PARCEL", weight_kg: "",
+  dimensions: { length: 0, width: 0, height: 0 },
+  service_type: "STANDARD", payment_method: "CASH_ON_DELIVERY",
+  current_hub_id: "", delivery_lat: null, delivery_lng: null,
+});
 
   const set = useCallback((key: keyof ShipmentForm, val: any) => {
     setForm(p => ({ ...p, [key]: val }));
@@ -47,26 +52,43 @@ export const NewShipmentTab = () => {
     });
   }, []);
 
-  const validate = () => {
-    const e: string[] = [];
-    if (step === 1) {
-      if (!form.receiver_name.trim())         e.push("Full name required");
-      if (!form.receiver_email.trim())        e.push("Email required");
-      if (!form.receiver_phone.trim())        e.push("Phone required");
-      if (!form.receiver_address.trim())      e.push("Address required");
-      if (!form.receiver_city.trim())         e.push("City required");
-      if (!form.receiver_postal_code.trim())  e.push("Postal code required");
-    }
-    if (step === 2) {
-      if (form.weight_kg === "" || Number(form.weight_kg) <= 0) e.push("Valid weight required");
-    }
-    if (step === 3) {
-      if (!form.current_hub_id)      e.push("Select a hub");
-      if (form.delivery_lat === null) e.push("Pin delivery location on map");
-    }
-    setErrors(e);
-    return e.length === 0;
-  };
+ 
+
+const validate = () => {
+  const e: string[] = [];
+
+  if (step === 1) {
+    // Sender fields validate කරනවා
+    if (!form.sender_name?.trim())         e.push("Full name required");
+    if (!form.sender_email?.trim())        e.push("Email required");
+    if (!form.sender_phone?.trim())        e.push("Phone required");
+    if (!form.sender_address?.trim())      e.push("Address required");
+    if (!form.sender_city?.trim())         e.push("City required");
+    if (!form.sender_postal_code?.trim())  e.push("Postal code required");
+  }
+
+  if (step === 2) {
+    // Receiver fields validate කරනවා
+    if (!form.receiver_name.trim())         e.push("Full name required");
+    if (!form.receiver_email.trim())        e.push("Email required");
+    if (!form.receiver_phone.trim())        e.push("Phone required");
+    if (!form.receiver_address.trim())      e.push("Address required");
+    if (!form.receiver_city.trim())         e.push("City required");
+    if (!form.receiver_postal_code.trim())  e.push("Postal code required");
+  }
+
+  if (step === 3) {
+    if (form.weight_kg === "" || Number(form.weight_kg) <= 0) e.push("Valid weight required");
+  }
+
+  if (step === 4) {
+    if (!form.current_hub_id)       e.push("Select a hub");
+    if (form.delivery_lat === null)  e.push("Pin delivery location on map");
+  }
+
+  setErrors(e);
+  return e.length === 0;
+};
 
   const submit = async () => {
     if (!validate()) return;

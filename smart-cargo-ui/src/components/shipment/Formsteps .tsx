@@ -8,10 +8,11 @@ import { Icon, Label, Row, Sel } from "./Ui";
 
 // ─── Step Bar ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: "Receiver",  icon: <Icon.User /> },
-  { id: 2, label: "Package",   icon: <Icon.Package /> },
-  { id: 3, label: "Logistics", icon: <Icon.Pin /> },
-  { id: 4, label: "Payment",   icon: <Icon.Card /> },
+  { id: 1, label: "Sender",  icon: <Icon.User /> },
+  { id: 2, label: "Receiver",  icon: <Icon.User /> },
+  { id: 3, label: "Package",   icon: <Icon.Package /> },
+  { id: 4, label: "Logistics", icon: <Icon.Pin /> },
+  { id: 5, label: "Payment",   icon: <Icon.Card /> },
 ];
 
 export const StepBar = ({ current }: { current: number }) => (
@@ -40,26 +41,146 @@ export const StepBar = ({ current }: { current: number }) => (
   </div>
 );
 
-// ─── Step 1 — Receiver Info ───────────────────────────────────────────────────
+
+// ─── Step 1 — Sender Info ───────────────────────────────────────────────────
 export const Step1 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
-      <div><Label t="Full Name" req /><input className={inp} placeholder="Nimna Perera" value={f.receiver_name} onChange={e => set("receiver_name", e.target.value)} /></div>
-      <div><Label t="Email" req /><input type="email" className={inp} placeholder="nimna@example.com" value={f.receiver_email} onChange={e => set("receiver_email", e.target.value)} /></div>
+      <div>
+        <Label t="Full Name" req />
+        <input 
+          className={inp} 
+          placeholder="Kamal Perera" 
+          value={f.sender_name} 
+          onChange={e => set("sender_name", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Email" req />
+        <input 
+          type="email" 
+          className={inp} 
+          placeholder="kamal@example.com" 
+          value={f.sender_email} 
+          onChange={e => set("sender_email", e.target.value)} 
+        />
+      </div>
     </Row>
     <Row>
-      <div><Label t="Phone" req /><input type="tel" className={inp} placeholder="077XXXXXXX" value={f.receiver_phone} onChange={e => set("receiver_phone", e.target.value)} /></div>
-      <div><Label t="Postal Code" req /><input className={inp} placeholder="20000" value={f.receiver_postal_code} onChange={e => set("receiver_postal_code", e.target.value)} /></div>
+      <div>
+        <Label t="Phone" req />
+        <input 
+          type="tel" 
+          className={inp} 
+          placeholder="077XXXXXXX" 
+          value={f.sender_phone} 
+          onChange={e => set("sender_phone", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Postal Code" req />
+        <input 
+          className={inp} 
+          placeholder="10100" 
+          value={f.sender_postal_code} 
+          onChange={e => set("sender_postal_code", e.target.value)} 
+        />
+      </div>
     </Row>
     <Row>
-      <div><Label t="City" req /><input className={inp} placeholder="Kandy" value={f.receiver_city} onChange={e => set("receiver_city", e.target.value)} /></div>
-      <div><Label t="Address" req /><input className={inp} placeholder="No 25, Peradeniya Road" value={f.receiver_address} onChange={e => set("receiver_address", e.target.value)} /></div>
+      <div>
+        <Label t="City" req />
+        <input 
+          className={inp} 
+          placeholder="Colombo" 
+          value={f.sender_city} 
+          onChange={e => set("sender_city", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Address" req />
+        <input 
+          className={inp} 
+          placeholder="No 12, Galle Road" 
+          value={f.sender_address} 
+          onChange={e => set("sender_address", e.target.value)} 
+        />
+      </div>
+    </Row>
+  </div>
+);
+
+
+// ─── Step 2 — Receiver Info ───────────────────────────────────────────────────
+export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
+  <div className="space-y-3">
+    <Row>
+      <div>
+        <Label t="Full Name" req />
+        <input 
+          className={inp} 
+          placeholder="Nimna Perera" 
+          value={f.receiver_name} 
+          onChange={e => set("receiver_name", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Email" req />
+        <input 
+          type="email" 
+          className={inp} 
+          placeholder="nimna@example.com" 
+          value={f.receiver_email} 
+          onChange={e => set("receiver_email", e.target.value)} 
+        />
+      </div>
+    </Row>
+    <Row>
+      <div>
+        <Label t="Phone" req />
+        <input 
+          type="tel" 
+          className={inp} 
+          placeholder="077XXXXXXX" 
+          value={f.receiver_phone} 
+          onChange={e => set("receiver_phone", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Postal Code" req />
+        <input 
+          className={inp} 
+          placeholder="20000" 
+          value={f.receiver_postal_code} 
+          onChange={e => set("receiver_postal_code", e.target.value)} 
+        />
+      </div>
+    </Row>
+    <Row>
+      <div>
+        <Label t="City" req />
+        <input 
+          className={inp} 
+          placeholder="Kandy" 
+          value={f.receiver_city} 
+          onChange={e => set("receiver_city", e.target.value)} 
+        />
+      </div>
+      <div>
+        <Label t="Address" req />
+        <input 
+          className={inp} 
+          placeholder="No 25, Peradeniya Road" 
+          value={f.receiver_address} 
+          onChange={e => set("receiver_address", e.target.value)} 
+        />
+      </div>
     </Row>
   </div>
 );
 
 // ─── Step 2 — Package Details ─────────────────────────────────────────────────
-export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
+export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
       <div><Label t="Package Type" req /><Sel value={f.package_type} onChange={v => set("package_type", v)} options={PKG_OPTIONS} /></div>
@@ -99,7 +220,7 @@ export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
 );
 
 // ─── Step 3 — Logistics ───────────────────────────────────────────────────────
-export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => {
+export const Step4 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => {
   const addressQuery = [f.receiver_address, f.receiver_city, f.receiver_postal_code].filter(Boolean).join(", ");
   const { result: geoResult, status: geoStatus } = useGeocode(addressQuery);
   const prevGeoRef = useRef<string>("");
@@ -128,7 +249,7 @@ export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
 };
 
 // ─── Step 4 — Payment & Summary ───────────────────────────────────────────────
-export const Step4 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
+export const Step5 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-4">
     <div>
       <Label t="Payment Method" req />

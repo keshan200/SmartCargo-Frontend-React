@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Icon } from "./Ui";
 import CargoMap from "../Map";
 import type { Shipment } from "../../types/shipment";
