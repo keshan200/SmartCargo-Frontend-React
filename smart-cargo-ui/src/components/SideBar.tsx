@@ -108,7 +108,7 @@ const NavButton = ({ item, isActive, onClick }: NavButtonProps) => (
       onClick={onClick}
       className={`
         group flex w-full items-center gap-3 rounded-2xl px-4 py-3
-        text-base transition-all duration-200 cursor-pointer
+        text-[18px] transition-all duration-200 cursor-pointer
         ${isActive
           ? "bg-orange-50 text-orange-500"
           : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"}
@@ -126,7 +126,7 @@ const NavButton = ({ item, isActive, onClick }: NavButtonProps) => (
       <span className="flex-1 text-left">{item.label}</span>
       {item.badge !== undefined && (
         <span
-          className="flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-xs text-white"
+          className="flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[13px] text-white"
           style={{ fontWeight: 600 }}
         >
           {item.badge}
@@ -143,7 +143,7 @@ const Sidebar = () => {
   return (
     <div
       style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
-      className="flex h-screen w-72 flex-col bg-white border-r border-gray-100 shadow-sm"
+      className="sidebar-panel flex h-screen w-72 flex-col bg-white border-r border-gray-100 shadow-sm"
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-7">
@@ -164,7 +164,7 @@ const Sidebar = () => {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-4 pb-4">
         <p
-          className="mb-3 mt-2 px-3 text-xs text-gray-400 uppercase"
+          className="mb-3 mt-2 px-3 text-[14px] text-gray-400 uppercase"
           style={{ letterSpacing: "0.12em", fontWeight: 500 }}
         >
           Main Menu
@@ -181,7 +181,7 @@ const Sidebar = () => {
         </ul>
 
         <p
-          className="mb-3 mt-7 px-3 text-xs text-gray-400 uppercase"
+          className="mb-3 mt-7 px-3 text-[14px] text-gray-400 uppercase"
           style={{ letterSpacing: "0.12em", fontWeight: 500 }}
         >
           Reports
@@ -210,10 +210,10 @@ const Sidebar = () => {
           AK
         </div>
         <div className="flex-1 min-w-0">
-          <p className="truncate text-base text-gray-800" style={{ fontWeight: 600 }}>
+          <p className="truncate text-[18px] text-gray-800" style={{ fontWeight: 600 }}>
             Ashan Karunaratne
           </p>
-          <p className="text-sm text-gray-400" style={{ fontWeight: 400 }}>
+          <p className="text-[16px] text-gray-400" style={{ fontWeight: 400 }}>
             Administrator
           </p>
         </div>

@@ -9,7 +9,6 @@ interface HubCardProps {
 
 export const HubCard = ({ hub, onView, onEdit, onDelete }: HubCardProps) => (
   <div className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-100 transition-all duration-200">
-    <div className="h-0.5 bg-orange-500" />
     <div className="p-5">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0 mr-2">

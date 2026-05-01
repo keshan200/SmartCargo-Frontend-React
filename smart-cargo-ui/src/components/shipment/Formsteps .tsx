@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { PKG_OPTIONS, SERVICE_OPTIONS, PAYMENT_OPTIONS, inp } from "././Constants";
 import type { ShipmentForm } from "../../types/shipment";
+import type { Hub } from "../../types/Hubs";
 import { HubSelector } from "./Hubselector";
 import { useGeocode } from "./Utils";
 import { Icon, Label, Row, Sel } from "./Ui";
 
 // ─── Step Bar ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { id: 1, label: "Sender",  icon: <Icon.User /> },
+  { id: 1, label: "Sender",    icon: <Icon.User /> },
   { id: 2, label: "Receiver",  icon: <Icon.User /> },
   { id: 3, label: "Package",   icon: <Icon.Package /> },
   { id: 4, label: "Logistics", icon: <Icon.Pin /> },
@@ -42,69 +43,37 @@ export const StepBar = ({ current }: { current: number }) => (
 );
 
 
-// ─── Step 1 — Sender Info ───────────────────────────────────────────────────
+// ─── Step 1 — Sender Info ─────────────────────────────────────────────────────
 export const Step1 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
       <div>
         <Label t="Full Name" req />
-        <input 
-          className={inp} 
-          placeholder="Kamal Perera" 
-          value={f.sender_name} 
-          onChange={e => set("sender_name", e.target.value)} 
-        />
+        <input className={inp} placeholder="Kamal Perera" value={f.sender_name} onChange={e => set("sender_name", e.target.value)} />
       </div>
       <div>
         <Label t="Email" req />
-        <input 
-          type="email" 
-          className={inp} 
-          placeholder="kamal@example.com" 
-          value={f.sender_email} 
-          onChange={e => set("sender_email", e.target.value)} 
-        />
+        <input type="email" className={inp} placeholder="kamal@example.com" value={f.sender_email} onChange={e => set("sender_email", e.target.value)} />
       </div>
     </Row>
     <Row>
       <div>
         <Label t="Phone" req />
-        <input 
-          type="tel" 
-          className={inp} 
-          placeholder="077XXXXXXX" 
-          value={f.sender_phone} 
-          onChange={e => set("sender_phone", e.target.value)} 
-        />
+        <input type="tel" className={inp} placeholder="077XXXXXXX" value={f.sender_phone} onChange={e => set("sender_phone", e.target.value)} />
       </div>
       <div>
         <Label t="Postal Code" req />
-        <input 
-          className={inp} 
-          placeholder="10100" 
-          value={f.sender_postal_code} 
-          onChange={e => set("sender_postal_code", e.target.value)} 
-        />
+        <input className={inp} placeholder="10100" value={f.sender_postal_code} onChange={e => set("sender_postal_code", e.target.value)} />
       </div>
     </Row>
     <Row>
       <div>
         <Label t="City" req />
-        <input 
-          className={inp} 
-          placeholder="Colombo" 
-          value={f.sender_city} 
-          onChange={e => set("sender_city", e.target.value)} 
-        />
+        <input className={inp} placeholder="Colombo" value={f.sender_city} onChange={e => set("sender_city", e.target.value)} />
       </div>
       <div>
         <Label t="Address" req />
-        <input 
-          className={inp} 
-          placeholder="No 12, Galle Road" 
-          value={f.sender_address} 
-          onChange={e => set("sender_address", e.target.value)} 
-        />
+        <input className={inp} placeholder="No 12, Galle Road" value={f.sender_address} onChange={e => set("sender_address", e.target.value)} />
       </div>
     </Row>
   </div>
@@ -117,69 +86,37 @@ export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
     <Row>
       <div>
         <Label t="Full Name" req />
-        <input 
-          className={inp} 
-          placeholder="Nimna Perera" 
-          value={f.receiver_name} 
-          onChange={e => set("receiver_name", e.target.value)} 
-        />
+        <input className={inp} placeholder="Nimna Perera" value={f.receiver_name} onChange={e => set("receiver_name", e.target.value)} />
       </div>
       <div>
         <Label t="Email" req />
-        <input 
-          type="email" 
-          className={inp} 
-          placeholder="nimna@example.com" 
-          value={f.receiver_email} 
-          onChange={e => set("receiver_email", e.target.value)} 
-        />
+        <input type="email" className={inp} placeholder="nimna@example.com" value={f.receiver_email} onChange={e => set("receiver_email", e.target.value)} />
       </div>
     </Row>
     <Row>
       <div>
         <Label t="Phone" req />
-        <input 
-          type="tel" 
-          className={inp} 
-          placeholder="077XXXXXXX" 
-          value={f.receiver_phone} 
-          onChange={e => set("receiver_phone", e.target.value)} 
-        />
+        <input type="tel" className={inp} placeholder="077XXXXXXX" value={f.receiver_phone} onChange={e => set("receiver_phone", e.target.value)} />
       </div>
       <div>
         <Label t="Postal Code" req />
-        <input 
-          className={inp} 
-          placeholder="20000" 
-          value={f.receiver_postal_code} 
-          onChange={e => set("receiver_postal_code", e.target.value)} 
-        />
+        <input className={inp} placeholder="20000" value={f.receiver_postal_code} onChange={e => set("receiver_postal_code", e.target.value)} />
       </div>
     </Row>
     <Row>
       <div>
         <Label t="City" req />
-        <input 
-          className={inp} 
-          placeholder="Kandy" 
-          value={f.receiver_city} 
-          onChange={e => set("receiver_city", e.target.value)} 
-        />
+        <input className={inp} placeholder="Kandy" value={f.receiver_city} onChange={e => set("receiver_city", e.target.value)} />
       </div>
       <div>
         <Label t="Address" req />
-        <input 
-          className={inp} 
-          placeholder="No 25, Peradeniya Road" 
-          value={f.receiver_address} 
-          onChange={e => set("receiver_address", e.target.value)} 
-        />
+        <input className={inp} placeholder="No 25, Peradeniya Road" value={f.receiver_address} onChange={e => set("receiver_address", e.target.value)} />
       </div>
     </Row>
   </div>
 );
 
-// ─── Step 2 — Package Details ─────────────────────────────────────────────────
+// ─── Step 3 — Package Details ─────────────────────────────────────────────────
 export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
@@ -219,37 +156,121 @@ export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
   </div>
 );
 
-// ─── Step 3 — Logistics ───────────────────────────────────────────────────────
-export const Step4 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => {
-  const addressQuery = [f.receiver_address, f.receiver_city, f.receiver_postal_code].filter(Boolean).join(", ");
+// ─── Nearest hub helper ───────────────────────────────────────────────────────
+function nearestHub(hubs: Hub[], lat: number, lng: number): string {
+  let best = "";
+  let bestDist = Infinity;
+  for (const h of hubs) {
+    const d = Math.hypot(h.latitude - lat, h.longitude - lng);
+    if (d < bestDist) { bestDist = d; best = h._id; }
+  }
+  return best;
+}
+
+// ─── Step 4 — Logistics ───────────────────────────────────────────────────────
+export const Step4 = ({
+  f,
+  set,
+  setBulk,
+  onHubsLoaded,
+}: {
+  f: ShipmentForm;
+  set: (k: keyof ShipmentForm, v: any) => void;
+  setBulk?: (updates: Partial<ShipmentForm>) => void;
+  onHubsLoaded?: (hubs: Hub[]) => void;
+}) => {
+  const [hubs, setHubs] = useState<Hub[]>([]);
+
+  // ✅ city + postal code දෙකම ඇති වෙලාවෙ විතරක් fire වෙනවා
+  // ✅ "Sri Lanka" මෙතනම් — useGeocode ඇතුළෙ duplicate add වෙන්නේ නෑ
+  const addressQuery =
+    f.receiver_city && f.receiver_postal_code
+      ? `${f.receiver_city}, ${f.receiver_postal_code}, Sri Lanka`
+      : "";
+
   const { result: geoResult, status: geoStatus } = useGeocode(addressQuery);
   const prevGeoRef = useRef<string>("");
 
+  // When geocode resolves → atomically set coords + nearest hub
   useEffect(() => {
-    if (!geoResult) return;
+    if (!geoResult || hubs.length === 0) return;
     const key = `${geoResult.lat},${geoResult.lng}`;
     if (key === prevGeoRef.current) return;
     prevGeoRef.current = key;
-    set("delivery_lat", parseFloat(geoResult.lat.toFixed(6)));
-    set("delivery_lng", parseFloat(geoResult.lng.toFixed(6)));
-  }, [geoResult, set]);
 
-  const geoStatusColor: Record<string, string> = { loading: "text-amber-500", done: "text-green-500", error: "text-red-400" };
-  const geoStatusLabel: Record<string, string> = { loading: "Locating address…", done: "✓ Address located", error: "Address not found" };
+    const lat = parseFloat(geoResult.lat.toFixed(6));
+    const lng = parseFloat(geoResult.lng.toFixed(6));
+    const nearestId = nearestHub(hubs, lat, lng);
+
+    if (setBulk) {
+      // ✅ Single atomic setState — no stale closure race
+      setBulk({
+        delivery_lat: lat,
+        delivery_lng: lng,
+        ...(nearestId ? { current_hub_id: nearestId } : {}),
+      });
+    } else {
+      set("delivery_lat", lat);
+      set("delivery_lng", lng);
+      if (nearestId) set("current_hub_id", nearestId);
+    }
+  }, [geoResult, hubs, set, setBulk]);
+
+  const handleHubsLoaded = (loaded: Hub[]) => {
+    setHubs(loaded);
+    onHubsLoaded?.(loaded);
+  };
+
+  const selectedHub = hubs.find(h => h._id === f.current_hub_id);
+
+  const geoStatusColor: Record<string, string> = {
+    loading: "text-amber-500",
+    done:    "text-green-500",
+    error:   "text-red-400",
+  };
+  const geoStatusLabel: Record<string, string> = {
+    loading: "Locating address…",
+    done:    "✓ Address located — nearest hub auto-selected",
+    error:   "Address not found — please select a hub manually",
+  };
 
   return (
     <div className="space-y-4">
-      <div><Label t="Pickup Hub" req /><HubSelector selectedId={f.current_hub_id} onSelect={id => set("current_hub_id", id)} /></div>
+      <div>
+        <Label t="Pickup Hub" req />
+        <HubSelector
+          selectedId={f.current_hub_id}
+          onSelect={id => set("current_hub_id", id)}
+          onHubsLoaded={handleHubsLoaded}
+        />
+      </div>
+
       {geoStatus !== "idle" && (
-        <p className={`text-[11px] font-medium ${geoStatusColor[geoStatus] ?? ""}`}>{geoStatusLabel[geoStatus]}</p>
+        <p className={`text-[11px] font-medium ${geoStatusColor[geoStatus] ?? ""}`}>
+          {geoStatusLabel[geoStatus]}
+          {geoStatus === "done" && selectedHub && (
+            <span className="text-orange-500 ml-1">({selectedHub.hub_name})</span>
+          )}
+        </p>
       )}
+
       <p className="text-xs text-gray-400">Pin the delivery location using the map on the right →</p>
     </div>
   );
 };
 
-// ─── Step 4 — Payment & Summary ───────────────────────────────────────────────
-export const Step5 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
+// ─── Step 5 — Payment & Summary ───────────────────────────────────────────────
+export const Step5 = ({
+  f,
+  set,
+  onSubmit,
+  isSubmitting = false,
+}: {
+  f: ShipmentForm;
+  set: (k: keyof ShipmentForm, v: any) => void;
+  onSubmit?: () => void;
+  isSubmitting?: boolean;
+}) => (
   <div className="space-y-4">
     <div>
       <Label t="Payment Method" req />
@@ -265,24 +286,32 @@ export const Step5 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
         ))}
       </div>
     </div>
-    <div className="rounded-xl border border-gray-100 overflow-hidden">
-      <div className="bg-orange-500 px-4 py-2.5">
-        <p className="text-xs font-bold text-white uppercase tracking-wider">Order Summary</p>
-      </div>
-      <div className="divide-y divide-gray-100">
-        {[
-          ["Receiver", f.receiver_name || "—"], ["Email", f.receiver_email || "—"], ["Phone", f.receiver_phone || "—"],
-          ["City", f.receiver_city || "—"], ["Address", f.receiver_address || "—"], ["Package", f.package_type],
-          ["Weight", f.weight_kg !== "" ? `${f.weight_kg} kg` : "—"],
-          ["Dimensions", f.dimensions.length ? `${f.dimensions.length}×${f.dimensions.width}×${f.dimensions.height} cm` : "Not set"],
-          ["Service", f.service_type], ["Payment", f.payment_method.replace(/_/g, " ")],
-        ].map(([k, v]) => (
-          <div key={k} className="flex items-center justify-between px-4 py-2.5">
-            <span className="text-xs text-gray-400 font-medium">{k}</span>
-            <span className="text-xs text-gray-800 font-semibold text-right max-w-[60%] truncate">{v}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+
+    {/* ── Complete Shipment Button ── */}
+    <button
+      type="button"
+      onClick={onSubmit}
+      disabled={isSubmitting || !f.payment_method}
+      className={`w-full py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+        isSubmitting || !f.payment_method
+          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+          : "bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white shadow-md shadow-orange-200"
+      }`}
+    >
+      {isSubmitting ? (
+        <>
+          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          Processing…
+        </>
+      ) : (
+        <>
+          <Icon.Check />
+          Complete Shipment
+        </>
+      )}
+    </button>
   </div>
 );

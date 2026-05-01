@@ -20,9 +20,7 @@ export default function SummaryPanel({
   onReset,
 }: SummaryPanelProps) {
   const summaryRows: { label: string; value: string; highlight?: boolean }[] = [
-    { label: "Name", value: userForm.full_name || "—" },
-    { label: "Email", value: userForm.email || "—" },
-    { label: "Phone", value: userForm.phone_number || "—" },
+   
     { label: "Role", value: userForm.role || "—", highlight: !!userForm.role },
   ];
 

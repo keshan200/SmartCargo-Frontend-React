@@ -19,12 +19,8 @@ export default function ShipmentPage() {
       >
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <div className="inline-flex items-center gap-1.5 bg-orange-50 border border-orange-100 rounded-full px-3 py-1 text-[11px] font-semibold text-orange-500 mb-3">
-              📦 Shipment Management
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              SmartCargo Dashboard
-            </h1>
+            
+           
             <p className="text-sm text-gray-400 mt-1">
               Create and manage your shipments from one place.
             </p>
@@ -53,7 +49,7 @@ export default function ShipmentPage() {
             {
               label: "Total Shipments",
               value: "1,284",
-              icon: "📦",
+              icon: "",
               color: "text-gray-700",
               bg: "bg-gray-50",
               border: "border-gray-100",
@@ -61,7 +57,7 @@ export default function ShipmentPage() {
             {
               label: "Active",
               value: "38",
-              icon: "⚡",
+              icon: "",
               color: "text-orange-600",
               bg: "bg-orange-50",
               border: "border-orange-100",
@@ -69,7 +65,7 @@ export default function ShipmentPage() {
             {
               label: "Delivered",
               value: "1,246",
-              icon: "✅",
+              icon: "",
               color: "text-green-600",
               bg: "bg-green-50",
               border: "border-green-100",
@@ -101,8 +97,8 @@ export default function ShipmentPage() {
         <div className="flex items-center gap-1 border-b border-gray-100">
           {(
             [
-              { key: "new", label: "New Shipment", icon: "➕" },
-              { key: "list", label: "All Shipments", icon: "📋" },
+              { key: "new", label: "New Shipment", icon: "" },
+              { key: "list", label: "All Shipments", icon: "" },
             ] as const
           ).map((t) => (
             <button

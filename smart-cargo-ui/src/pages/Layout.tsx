@@ -20,16 +20,11 @@ const Layout = () => {
   return (
     <div className="h-screen overflow-hidden">
      
-       {!hideNavbar && isLoggedIn &&(
-        <div>
-          <Navbar />
-        </div>
-      )}
       
-
       <main className="h-full overflow-y-auto">
         <Outlet />
       </main>
+     
     </div>
   );
 };

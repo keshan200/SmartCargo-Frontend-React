@@ -1,40 +1,44 @@
 import { useState, useEffect } from "react";
 
-import type { Hub } from "../../types/shipment";
 import { Icon } from "./Ui";
+import { getAllHubs } from "../../services/hub.service";
+import type { Hub } from "../../types/Hubs";
 
 // ─── Hub Selector ─────────────────────────────────────────────────────────────
 export const HubSelector = ({
-  selectedId, onSelect,
+  selectedId,
+  onSelect,
+  onHubsLoaded,         // ← NEW: parent needs hub list for nearest-hub logic
 }: {
   selectedId: string;
   onSelect: (id: string) => void;
+  onHubsLoaded?: (hubs: Hub[]) => void;
 }) => {
-  const [hubs, setHubs]       = useState<Hub[]>([]);
+  const [hubs, setHubs] = useState<Hub[]>([]);
   const [loading, setLoading] = useState(true);
-  const [warn, setWarn]       = useState("");
+  const [warn, setWarn] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/hubs");
-        if (!res.ok) throw new Error();
-        const d = await res.json();
-        setHubs(Array.isArray(d) ? d : (d.data ?? d.hubs ?? []));
-      } catch {
-        setHubs([
-          { _id: "69de3845f456dec19be397dd", name: "Colombo Central Hub", city: "Colombo" },
-          { _id: "69de3845f456dec19be397de", name: "Kandy Regional Hub",  city: "Kandy" },
-          { _id: "69de3845f456dec19be397df", name: "Galle Southern Hub",  city: "Galle" },
-          { _id: "69de3845f456dec19be397e0", name: "Jaffna Northern Hub", city: "Jaffna" },
-          { _id: "69de3845f456dec19be397e1", name: "Kurunegala Hub",      city: "Kurunegala" },
-        ]);
-        setWarn("Mock data — connect /api/hubs");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const fetchHubsData = async () => {
+    try {
+      setLoading(true);
+      const data: any = await getAllHubs();
+      const hubsList: Hub[] = Array.isArray(data)
+        ? data
+        : (data.data ?? data.hubs ?? []);
+
+      setHubs(hubsList);
+      onHubsLoaded?.(hubsList);   // ← notify parent
+
+      if (hubsList.length === 0) setWarn("No hubs found in the database.");
+    } catch (error) {
+      console.error("Error fetching hubs:", error);
+      setWarn("Failed to load hubs from the server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchHubsData(); }, []);
 
   if (loading)
     return (
@@ -65,7 +69,7 @@ export const HubSelector = ({
             </div>
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium truncate ${selectedId === h._id ? "text-orange-700" : "text-gray-700"}`}>
-                {h.name}
+                {h.hub_name}
               </p>
               <p className={`text-[11px] ${selectedId === h._id ? "text-orange-400" : "text-gray-400"}`}>
                 {h.city}

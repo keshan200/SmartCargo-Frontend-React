@@ -23,7 +23,7 @@ export interface Hub {
 }
 
 export interface ShipmentForm {
-  sender_id: string;
+ 
   sender_name: string;
   sender_email: string;
   sender_phone: string;
@@ -44,6 +44,8 @@ export interface ShipmentForm {
   current_hub_id: string;
   delivery_lat: number | null;
   delivery_lng: number | null;
+
+  
 }
 
 export interface Shipment {

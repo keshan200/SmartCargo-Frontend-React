@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom"
 
-import { useAuth } from "../context/useAuth"
 import Sidebar from "../components/SideBar"
 import Navbar from "../components/Navbar";
+import LoadingScreen from "../components/Loading";
 
 
 
@@ -32,6 +32,7 @@ const isLoggedIn = true;
       ) : (
         <div className="w-full h-full flex justify-center items-center">
           {/**unauthorized oahe */}
+          <LoadingScreen />
         </div>
       )}
        </div>

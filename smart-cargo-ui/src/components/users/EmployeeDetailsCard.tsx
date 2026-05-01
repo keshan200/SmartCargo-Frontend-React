@@ -1,5 +1,3 @@
-
-
 import type { Hub } from "../../types/Hubs";
 import type { EmployeeFormData } from "../../types/User";
 import Field from "./Field";
@@ -24,6 +22,14 @@ export default function EmployeeDetailsCard({
   loadingHubs,
   role,
 }: EmployeeDetailsCardProps) {
+
+
+
+
+
+
+
+  
   return (
     <section className="bg-white border border-orange-100 rounded-2xl overflow-hidden">
       {/* Header */}
@@ -51,7 +57,50 @@ export default function EmployeeDetailsCard({
 
       {/* Fields */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Hub */}
+
+        {/* Full Name */}
+        <div className="md:col-span-2">
+          <Field label="Full Name" required>
+            <input
+              type="text"
+              name="full_name"
+              value={employeeForm.full_name}
+              onChange={onChange}
+              placeholder="e.g. Kashan Perera"
+              required
+              className={inputCls}
+            />
+          </Field>
+        </div>
+
+        {/* Mobile Number */}
+        <Field label="Mobile Number" required>
+          <input
+            type="tel"
+            name="mobile_number"
+            value={employeeForm.mobile_number}
+            onChange={onChange}
+            placeholder="+94 76 449 8xx7"
+            required
+            className={inputCls}
+          />
+        </Field>
+
+        {/* Address */}
+        <Field label="Address" required>
+          <input
+            type="text"
+            name="address"
+            value={employeeForm.address}
+            onChange={onChange}
+            placeholder="e.g. 12, Main Street, Colombo"
+            required
+            className={inputCls}
+          />
+        </Field>
+
+     
+        {/* Assigned Hub */}
         <div className="md:col-span-2">
           <Field label="Assigned Hub" required>
             {loadingHubs ? (
@@ -81,7 +130,7 @@ export default function EmployeeDetailsCard({
           </Field>
         </div>
 
-        {/* License */}
+        {/* License Number */}
         <Field label="License Number" required>
           <input
             type="text"
@@ -94,7 +143,7 @@ export default function EmployeeDetailsCard({
           />
         </Field>
 
-        {/* Status toggle */}
+        {/* Status Toggle */}
         <Field label="Status">
           <div className="flex gap-3 mt-1">
             {(["ACTIVE", "INACTIVE"] as const).map((s) => (
@@ -115,6 +164,7 @@ export default function EmployeeDetailsCard({
             ))}
           </div>
         </Field>
+
       </div>
     </section>
   );

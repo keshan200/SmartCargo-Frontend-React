@@ -3,7 +3,7 @@ import type { IUser, UserFormData, UserLoginCredentials } from "../types/User";
 
 
 
-export const AUTH_URL = `${BASE_URL}/users`
+export const AUTH_URL = `${BASE_URL}/auth`
 
 
 

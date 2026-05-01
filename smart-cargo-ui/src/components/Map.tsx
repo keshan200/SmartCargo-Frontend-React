@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import 'leaflet-routing-machine';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 
 const DefaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -11,10 +13,18 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Hub marker — orange pin
+const HubIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
 // Sri Lanka bounding box
 const SL_BOUNDS = L.latLngBounds(
-  L.latLng(5.85, 79.5),  // South-West
-  L.latLng(9.9, 81.9)   // North-East
+  L.latLng(5.85, 79.5),
+  L.latLng(9.9, 81.9)
 );
 
 const SL_CENTER: [number, number] = [7.8731, 80.7718];
@@ -26,19 +36,23 @@ interface CargoMapProps {
   height?: string;
   readOnly?: boolean;
   onChange?: (lat: number, lng: number) => void;
+
+  // Route: hub → delivery pin
+  routeFrom?: { lat: number; lng: number };
+  routeTo?:   { lat: number; lng: number };
 }
 
+// ─── Click Handler ────────────────────────────────────────────────────────────
 function ClickHandler({ onChange }: { onChange?: (lat: number, lng: number) => void }) {
   useMapEvents({
     click(e) {
-      if (onChange) {
-        onChange(e.latlng.lat, e.latlng.lng);
-      }
+      if (onChange) onChange(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
 }
 
+// ─── Fly-to updater ───────────────────────────────────────────────────────────
 function MapUpdater({ lat, lng }: { lat?: number; lng?: number }) {
   const map = useMap();
   useEffect(() => {
@@ -49,15 +63,76 @@ function MapUpdater({ lat, lng }: { lat?: number; lng?: number }) {
   return null;
 }
 
+// ─── Routing Machine Control ──────────────────────────────────────────────────
+function RoutingControl({
+  from,
+  to,
+}: {
+  from: { lat: number; lng: number };
+  to:   { lat: number; lng: number };
+}) {
+  const map = useMap();
+  const controlRef = useRef<L.Routing.Control | null>(null);
+
+  useEffect(() => {
+    if (controlRef.current) {
+      try { map.removeControl(controlRef.current); } catch (_) {}
+      controlRef.current = null;
+    }
+
+    controlRef.current = L.Routing.control({
+      waypoints: [
+        L.latLng(from.lat, from.lng),
+        L.latLng(to.lat, to.lng),
+      ],
+      router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1',
+      }),
+      lineOptions: {
+        styles: [{ color: '#f97316', weight: 4, opacity: 0.85 }],
+        extendToWaypoints: true,
+        missingRouteTolerance: 0,
+      },
+      collapsible: true,
+      show: false,
+      addWaypoints: false,
+      routeWhileDragging: false,
+      fitSelectedRoutes: false,
+      showAlternatives: false,
+      createMarker: (i: number, wp: L.Routing.Waypoint) => {
+        return L.marker(wp.latLng, { icon: i === 0 ? HubIcon : DefaultIcon });
+      },
+    }).addTo(map);
+
+    controlRef.current.on('routesfound', () => {
+      const el = (controlRef.current as any)?._container as HTMLElement | undefined;
+      if (el) el.style.display = 'none';
+    });
+
+    return () => {
+      if (controlRef.current) {
+        try { map.removeControl(controlRef.current); } catch (_) {}
+        controlRef.current = null;
+      }
+    };
+  }, [map, from.lat, from.lng, to.lat, to.lng]);
+
+  return null;
+}
+
+// ─── Main Map Component ───────────────────────────────────────────────────────
 const CargoMap: React.FC<CargoMapProps> = ({
   lat,
   lng,
   height = '400px',
   readOnly = false,
   onChange,
+  routeFrom,
+  routeTo,
 }) => {
   const hasPin = lat && lng;
   const position: [number, number] | undefined = hasPin ? [lat!, lng!] : undefined;
+  const showRoute = !!(routeFrom && routeTo);
 
   return (
     <div style={{ height, width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
@@ -76,11 +151,22 @@ const CargoMap: React.FC<CargoMapProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {position && (
+        {/* Route: hub → delivery pin via leaflet-routing-machine */}
+        {showRoute && (
+          <RoutingControl from={routeFrom!} to={routeTo!} />
+        )}
+
+        {/* Delivery pin — only shown when NO routing (routing adds its own markers) */}
+        {position && !showRoute && (
           <Marker position={position}>
-            <Popup>
-              {lat!.toFixed(4)}, {lng!.toFixed(4)}
-            </Popup>
+            <Popup>{lat!.toFixed(4)}, {lng!.toFixed(4)}</Popup>
+          </Marker>
+        )}
+
+        {/* Delivery pin label when routing is active */}
+        {position && showRoute && (
+          <Marker position={position}>
+            <Popup>📍 Delivery: {lat!.toFixed(4)}, {lng!.toFixed(4)}</Popup>
           </Marker>
         )}
 

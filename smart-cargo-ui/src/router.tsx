@@ -9,6 +9,7 @@ import ShipmentPage from "./pages/ship";
 import VehicleDirectory from "./pages/vehicle";
 
 import AddUserPagggge from "./pages/AddUserPage";
+import RoleGate from "./components/RoleGate";
 
 
 
@@ -29,6 +30,13 @@ const router = createBrowserRouter([
        {
          element:<AdminRoutes />,
          children:[
+
+          {
+           element: <RoleGate allowedRoles={["CUSTOMER"]} />,
+           children: [
+               
+             ],
+          },
         
             {path:"/dashboard", element: <Dashboard />},
             {path:"/hubs", element: <HubPage />},

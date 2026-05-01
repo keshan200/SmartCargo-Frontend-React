@@ -8,14 +8,41 @@ import { PricingConfig } from "./Constants";
 
 // ─── Right Panel (Map + Price) ────────────────────────────────────────────────
 export const RightPanel = ({
-  form, onMapClick, onGPS, mapKey,
+  form,
+  onMapClick,
+  onGPS,
+  mapKey,
+  hubCoords,
+  senderCoords,   // ← NEW: geocoded sender location for route start
 }: {
   form: ShipmentForm;
   onMapClick: (lat: number, lng: number) => void;
   onGPS: () => void;
   mapKey?: string;
+  hubCoords?: { lat: number; lng: number } | null;
+  senderCoords?: { lat: number; lng: number } | null;
 }) => {
   const pr = calcPrice(form);
+
+  // Route logic:
+  // - If delivery pin is set AND hub is selected → route from hub → delivery
+  // - If only sender is geocoded (step 1, no delivery pin yet) → route from sender → hub
+  // - If both exist → prefer hub → delivery
+  const hasDelivery = form.delivery_lat !== null && form.delivery_lng !== null;
+
+  let routeFrom: { lat: number; lng: number } | undefined;
+  let routeTo:   { lat: number; lng: number } | undefined;
+
+  if (hubCoords && hasDelivery) {
+    // Hub → Delivery (main route)
+    routeFrom = hubCoords;
+    routeTo   = { lat: form.delivery_lat!, lng: form.delivery_lng! };
+  } else if (senderCoords && hubCoords) {
+    // Sender → Hub (preview while filling step 1/2)
+    routeFrom = senderCoords;
+    routeTo   = hubCoords;
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 h-0 relative">
@@ -25,26 +52,34 @@ export const RightPanel = ({
           lng={form.delivery_lng ?? undefined}
           height="100%"
           onChange={(lat, lng) => onMapClick(lat, lng)}
+          routeFrom={routeFrom}
+          routeTo={routeTo}
         />
+
         <button
           type="button" onClick={onGPS}
           className="absolute top-3 right-3 z-10 flex items-center gap-1 text-[11px] font-semibold text-orange-500 border border-orange-200 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg hover:bg-orange-50 transition shadow-sm"
         >
           <Icon.Target /> My GPS
         </button>
+
         {form.delivery_lat !== null && (
           <div className="absolute bottom-3 left-3 right-3 z-10 flex gap-2">
             <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg border border-orange-200 text-xs font-mono text-orange-700 shadow-sm">
-              <span className="text-[9px] font-sans font-bold text-gray-400 uppercase">Lat</span>{form.delivery_lat.toFixed(6)}
+              <span className="text-[9px] font-sans font-bold text-gray-400 uppercase">Lat</span>
+              {form.delivery_lat.toFixed(6)}
             </div>
             <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-white/90 backdrop-blur-sm rounded-lg border border-orange-200 text-xs font-mono text-orange-700 shadow-sm">
-              <span className="text-[9px] font-sans font-bold text-gray-400 uppercase">Lng</span>{form.delivery_lng!.toFixed(6)}
+              <span className="text-[9px] font-sans font-bold text-gray-400 uppercase">Lng</span>
+              {form.delivery_lng!.toFixed(6)}
             </div>
           </div>
         )}
       </div>
+
+      {/* Price Breakdown */}
       <div className="bg-white border-t border-gray-100 p-4 shrink-0">
-        <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-3">Estimated Price</p>
+        <p className="text-[16px] text-orange-500  tracking-widest mb-3 font-sans">Estimated Price</p>
         <div className="space-y-1.5">
           <div className="flex justify-between">
             <span className="text-xs text-gray-400">Base fee</span>

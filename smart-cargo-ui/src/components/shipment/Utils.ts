@@ -30,7 +30,7 @@ export function calcPrice(form: ShipmentForm) {
   return { base, perKg: Math.round(perKg), perKm: Math.round(perKm), km: Math.round(km * 10) / 10, total, multiplierApplied };
 }
 
-// ─── Geocode hook ─────────────────────────────────────────────────────────────
+// ─── Geocode hook (generic) ───────────────────────────────────────────────────
 export type GeoStatus = "idle" | "loading" | "done" | "error";
 
 export function useGeocode(query: string): { result: { lat: number; lng: number } | null; status: GeoStatus } {
@@ -41,10 +41,13 @@ export function useGeocode(query: string): { result: { lat: number; lng: number 
   useEffect(() => {
     if (!query || query.length < 5) return;
     if (timerRef.current) clearTimeout(timerRef.current);
+
+    setResult(null);
     setStatus("loading");
+
     timerRef.current = setTimeout(async () => {
       try {
-        const encoded = encodeURIComponent(query + ", Sri Lanka");
+        const encoded = encodeURIComponent(query);
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=1&countrycodes=lk`,
           { headers: { "Accept-Language": "en" } }
@@ -60,8 +63,29 @@ export function useGeocode(query: string): { result: { lat: number; lng: number 
         setStatus("error");
       }
     }, 800);
+
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [query]);
 
   return { result, status };
+}
+
+// ─── Sender Geocode hook ──────────────────────────────────────────────────────
+// Geocodes the sender's city + postal code → returns lat/lng for map routing.
+// Only fires when both city and postal_code are non-empty.
+export function useSenderGeocode(
+  city: string,
+  postalCode: string
+): { coords: { lat: number; lng: number } | null; status: GeoStatus } {
+  const query =
+    city && postalCode
+      ? `${city}, ${postalCode}, Sri Lanka`
+      : "";
+
+  const { result, status } = useGeocode(query);
+
+  return {
+    coords: result,
+    status,
+  };
 }

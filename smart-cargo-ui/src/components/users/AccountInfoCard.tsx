@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import Field from "./Field";
 import { UserRole, type UserFormData } from "../../types/User";
 
@@ -34,46 +33,21 @@ export default function AccountInfoCard({ userForm, onChange }: AccountInfoCardP
 
       {/* Fields */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Full Name */}
+
+        {/* Email */}
         <div className="md:col-span-2">
-          <Field label="Full Name" required>
+          <Field label="Email Address" required>
             <input
-              type="text"
-              name="full_name"
-              value={userForm.full_name}
+              type="email"
+              name="email"
+              value={userForm.email}
               onChange={onChange}
-              placeholder="e.g. Kashan Perera"
+              placeholder="user@example.com"
               required
               className={inputCls}
             />
           </Field>
         </div>
-
-        {/* Email */}
-        <Field label="Email Address" required>
-          <input
-            type="email"
-            name="email"
-            value={userForm.email}
-            onChange={onChange}
-            placeholder="user@example.com"
-            required
-            className={inputCls}
-          />
-        </Field>
-
-        {/* Phone */}
-        <Field label="Phone Number" required>
-          <input
-            type="tel"
-            name="phone_number"
-            value={userForm.phone_number}
-            onChange={onChange}
-            placeholder="+94 76 449 8xx7"
-            required
-            className={inputCls}
-          />
-        </Field>
 
         {/* Password */}
         <Field label="Password" required>
@@ -131,12 +105,13 @@ export default function AccountInfoCard({ userForm, onChange }: AccountInfoCardP
             required
             className={`${inputCls} appearance-none cursor-pointer`}
           >
-           
+            <option value="">Select a role</option>
             <option value={UserRole.DISPATCHER}>Dispatcher</option>
             <option value={UserRole.DRIVER}>Driver</option>
             <option value={UserRole.ADMIN}>Admin</option>
           </select>
         </Field>
+
       </div>
     </section>
   );

@@ -26,6 +26,8 @@ export const AuthProvider  = ({children}:AuthProviderProps) => {
    const login  =  (token:string) => {
     setIsLoggedIn(true)
     setAccessToken(token)
+ 
+   
    }
    
    const logout =  () => setIsLoggedIn(false)

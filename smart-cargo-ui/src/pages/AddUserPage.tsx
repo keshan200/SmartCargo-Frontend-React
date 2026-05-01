@@ -11,10 +11,8 @@ import type { Hub } from "../types/Hubs"; // ← shipment.ts වෙනුවට 
 export default function AddUserPagggge() {
   
   const [userForm, setUserForm] = useState<UserFormData>({
-    full_name: "",
     email: "",
     password: "",
-    phone_number: "",
     role: "",
   });
 
@@ -22,6 +20,11 @@ export default function AddUserPagggge() {
     assigned_hub_id: "",
     license_number: "",
     status: "ACTIVE",
+  
+  full_name: "",
+  mobile_number: "",
+  address: "",
+  employee_type: "",
   });
 
   const [hubs, setHubs] = useState<Hub[]>([]);
@@ -42,7 +45,7 @@ export default function AddUserPagggge() {
       }, 800);
     } else {
       setHubs([]);
-      setEmployeeForm({ assigned_hub_id: "", license_number: "", status: "ACTIVE" });
+     
     }
   }, [isEmployee]);
 
@@ -71,9 +74,7 @@ export default function AddUserPagggge() {
   };
 
   const handleReset = () => {
-    setUserForm({ full_name: "", email: "", password: "", phone_number: "", role: "" });
-    setEmployeeForm({ assigned_hub_id: "", license_number: "", status: "ACTIVE" });
-    setSubmitted(false);
+   
   };
 
   return (

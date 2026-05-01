@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { login } from "../services/user.service";
+import { useAuth } from "../context/useAuth";
+import axios from "axios";
+import LoadingScreen from "../components/Loading";
 
 type Field = "email" | "password";
 
@@ -12,33 +17,50 @@ const SmartCargoLogin = () => {
   const [focusedField, setFocused]  = useState<Field | null>(null);
   const [remember, setRemember]     = useState(false);
 
+  
+  const navigate = useNavigate();
+  const {login:authenticate} =  useAuth()
+
+
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-// 👈 Meka import karanna
+if (isLoading){
+  <LoadingScreen />
+}
 
-// Component eka athule:
-const navigate = useNavigate(); // 👈 Hook eka initialize karanna
 
-const handleLogin = (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setIsLoading(true);
 
-  // Temporary Backend Mockup
-  setTimeout(() => {
-    setIsLoading(false);
+  const formData = { email, password };
+
+  try {
+     const response = await login(formData);
+       setIsLoading(true)
+      authenticate(response.access_token);
+      toast.success(`Welcome, ${response.user.email}`);
+      navigate("/dashboard");
+   
+  } catch (error: any) {
     
-    if (email === "admin@cargo.com" && password === "admin123") {
-      // Login success nam dashboard ekata yawanna
-      // Oya useAuth() use karanawa nam ethana isLoggedIn true karanna oni
-      navigate("/dashboard"); 
-    } else {
-      alert("Email ho Password waradii! (admin@cargo.com / admin123 gahal balanna)");
-    }
-  }, 1500);
+       if(axios.isAxiosError(error)){
+          toast.error(error.message)
+        }else{
+          toast.error("something went worng")
+        }
+
+
+  } finally {
+    setIsLoading(false);
+  }
 };
+
+
+
   const inputCls = (field: Field) =>
     `w-full h-[50px] pl-11 text-[14.5px] outline-none rounded-xl border box-border transition-all duration-200
     ${focusedField === field

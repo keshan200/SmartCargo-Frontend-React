@@ -1,4 +1,5 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss" ;
 
 
@@ -6,9 +7,10 @@
 
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.17rem;
   line-height: 1.5;
   font-weight: 400;
-  
 }
+
 
