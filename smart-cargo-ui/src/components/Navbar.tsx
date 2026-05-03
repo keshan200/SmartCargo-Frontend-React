@@ -9,7 +9,7 @@ const alerts = [
 
 const Navbar = () => {
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white ">
+    <nav className="sticky top-0 z-50 w-full bg-white font-['Poppins',sans-serif]">
       <div className="flex items-space-between justify-end px-6 h-14">
       
 

@@ -10,6 +10,7 @@ import VehicleDirectory from "./pages/vehicle";
 
 import AddUserPagggge from "./pages/AddUserPage";
 import RoleGate from "./components/RoleGate";
+import AccessDenied from "./pages/AccessDenied";
 
 
 
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
     children:[
        {path:"/", element: <Login /> },
        {path:"/login", element: <Login /> },
+       {path:"/access-denied", element: <AccessDenied /> },
       
 
        {

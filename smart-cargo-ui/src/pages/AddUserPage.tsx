@@ -78,7 +78,7 @@ export default function AddUserPagggge() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 font-['Poppins',sans-serif]">
       <main className="max-w-7xl mx-auto px-6 py-10">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Add New User</h1>

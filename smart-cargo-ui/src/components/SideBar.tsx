@@ -142,9 +142,18 @@ const Sidebar = () => {
 
   return (
     <div
-      style={{ fontFamily: "'DM Sans', 'Nunito', sans-serif" }}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
       className="sidebar-panel flex h-screen w-72 flex-col bg-white border-r border-gray-100 shadow-sm"
     >
+      <style>{`
+        .sidebar-panel nav::-webkit-scrollbar {
+          display: none;
+        }
+        .sidebar-panel nav {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-7">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-lg shadow-orange-200">

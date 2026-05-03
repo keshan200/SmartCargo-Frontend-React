@@ -41,11 +41,10 @@ export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardPr
   };
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:border-orange-400 transition-all duration-200 group">
-      <div className="h-[3.5px] bg-orange-500" />
+    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden transition-all duration-200 group font-['Poppins',sans-serif]">
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-[15px] font-semibold text-gray-900 tracking-tight">{vehicle.vehicle_number}</h3>
+          <h3 className="text-[17px] font-semibold text-gray-900 tracking-tight">{vehicle.vehicle_number}</h3>
           
 
         <div className="flex gap-1">
@@ -78,25 +77,25 @@ export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardPr
 
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 rounded-md mb-4">
           <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
-          <span className="text-[11px] font-semibold text-orange-700">
-            {TYPE_ICON[vehicle.vehicle_type]} {TYPE_LABEL[vehicle.vehicle_type]}
+          <span className="text-[12px] font-semibold text-orange-700">
+            {TYPE_LABEL[vehicle.vehicle_type]}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Capacity</p>
-            <p className="text-[13px] font-medium text-gray-700">{vehicle.capacity_kg.toLocaleString()} kg</p>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Capacity</p>
+            <p className="text-[15px] font-medium text-gray-700">{vehicle.capacity_kg.toLocaleString()} kg</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Status</p>
-            <p className="text-[13px] font-semibold text-green-600">● Active</p>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Status</p>
+            <p className="text-[15px] font-semibold text-green-600">● Active</p>
           </div>
         </div>
 
         <div className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-          <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">GPS</span>
-          <span className="text-[12px] text-gray-500 font-mono">{vehicle.current_lat}, {vehicle.current_lng}</span>
+          <span className="text-[12px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">GPS</span>
+          <span className="text-[13px] text-gray-500 font-mono">{vehicle.current_lat}, {vehicle.current_lng}</span>
         </div>
 
         <p className="text-[11px] text-gray-300 text-right mt-3 font-normal">

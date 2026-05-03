@@ -6,7 +6,7 @@ export interface AuthContextType {
   isLoggedIn: boolean;
   isAuthenticating: boolean;
   user: IUser | null; 
-  login: (accessToken: string) => void;
+  login: (accessToken: string, user: IUser) => void;
   logout: () => void;
   setUser: (user: IUser | null) => void;
 }

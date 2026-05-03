@@ -1,3 +1,4 @@
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { getCoordinates } from "../../services/hub.service";
 import type { Hub, ModalMode } from "../../types/Hubs";
@@ -21,13 +22,6 @@ interface HubModalProps {
   openModal: (mode: ModalMode, hub?: Hub) => void;
 }
 
-
-
-
-
-
-
-
 export const HubModal = ({
   modalMode, selectedHub, setSelectedHub,
   closeModal, mapStep, setMapStep,
@@ -37,35 +31,46 @@ export const HubModal = ({
 
   const isWide = mapStep || modalMode === "view";
 
+  const [addressError, setAddressError] = useState<string>("");
 
-const handleAddressLookup = async () => {
-  
-  if (selectedHub.address && selectedHub.city) {
-    const coords = await getCoordinates(selectedHub.address, selectedHub.city);
-    
-    if (coords) {
-      setSelectedHub(prev => ({
-        ...prev,
-        latitude: coords.lat,
-        longitude: coords.lon
-      }));
-      toast.success("Location found on map!");
+  // Auto lookup coordinates from address + city, then go to map step
+  const handleNext = async () => {
+    if (!validateStep1()) return;
+
+    if (selectedHub.address && selectedHub.city) {
+      const loadingToast = toast.loading("Finding location on map...");
+      const coords = await getCoordinates(selectedHub.address, selectedHub.city);
+      toast.dismiss(loadingToast);
+
+      if (coords) {
+        setAddressError(""); // ✅ clear error
+        setSelectedHub((prev) => ({
+          ...prev,
+          latitude: coords.lat,
+          longitude: coords.lon,
+        }));
+        toast.success("Location found! You can adjust it on the map.");
+        setMapStep(true);
+      } else {
+        setAddressError("Address not found. Please enter a valid address."); // ❌ mark field red
+        toast.error("Address not found. Please check and try again.");
+        return;
+      }
     } else {
-      toast.error("Could not find this location. Please pin it manually.");
+      setMapStep(true);
     }
-  }
-};
-
-
-
+  };
 
   return (
     <div
       className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-5"
       onClick={(e) => e.target === e.currentTarget && closeModal()}
     >
-      <div className={`bg-white rounded-2xl w-full border border-gray-200 shadow-2xl overflow-hidden transition-all ${isWide ? "max-w-4xl" : "max-w-lg"}`}>
-
+      <div
+        className={`bg-white rounded-2xl w-full border border-gray-200 shadow-2xl overflow-hidden transition-all ${
+          isWide ? "max-w-4xl" : "max-w-lg"
+        }`}
+      >
         {/* Header */}
         <div className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -85,14 +90,17 @@ const handleAddressLookup = async () => {
               )}
             </div>
           </div>
-          <button onClick={closeModal} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <button
+            onClick={closeModal}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* VIEW */}
+        {/* VIEW MODE */}
         {modalMode === "view" && (
           <>
             <div className="flex min-h-[460px]">
@@ -121,83 +129,178 @@ const handleAddressLookup = async () => {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
-              <button onClick={closeModal} className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">Close</button>
-              <button onClick={() => openModal("edit", selectedHub)} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors">Edit Hub</button>
+              <button
+                onClick={closeModal}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => openModal("edit", selectedHub)}
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+              >
+                Edit Hub
+              </button>
             </div>
           </>
         )}
 
-        {/* ADD/EDIT Step 1 */}
+        {/* ADD/EDIT — Step 1: Hub Information */}
         {(modalMode === "add" || modalMode === "edit") && !mapStep && (
           <div className="p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Hub Name *</label>
-                <input value={selectedHub.hub_name} onChange={(e) => setSelectedHub((h) => ({ ...h, hub_name: e.target.value }))} placeholder="e.g. Colombo Central Hub" className={inputCls(!!errors.hub_name)} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Hub Name *
+                </label>
+                <input
+                  value={selectedHub.hub_name}
+                  onChange={(e) => setSelectedHub((h) => ({ ...h, hub_name: e.target.value }))}
+                  placeholder="e.g. Colombo Central Hub"
+                  className={inputCls(!!errors.hub_name)}
+                />
                 {errors.hub_name && <p className="text-red-400 text-xs mt-1">{errors.hub_name}</p>}
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">City *</label>
-                <input value={selectedHub.city} onChange={(e) => setSelectedHub((h) => ({ ...h, city: e.target.value }))} placeholder="e.g. Colombo" className={inputCls(!!errors.city)} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  City *
+                </label>
+                <input
+                  value={selectedHub.city}
+                  onChange={(e) => setSelectedHub((h) => ({ ...h, city: e.target.value }))}
+                  placeholder="e.g. Colombo"
+                  className={inputCls(!!errors.city)}
+                />
                 {errors.city && <p className="text-red-400 text-xs mt-1">{errors.city}</p>}
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Contact No *</label>
-                <input value={selectedHub.contact_no} onChange={(e) => setSelectedHub((h) => ({ ...h, contact_no: e.target.value }))} placeholder="+94 11 234 5678" className={inputCls(!!errors.contact_no) + " font-mono"} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Contact No *
+                </label>
+                <input
+                  value={selectedHub.contact_no}
+                  onChange={(e) => setSelectedHub((h) => ({ ...h, contact_no: e.target.value }))}
+                  placeholder="+94 11 234 5678"
+                  className={inputCls(!!errors.contact_no) + " font-mono"}
+                />
                 {errors.contact_no && <p className="text-red-400 text-xs mt-1">{errors.contact_no}</p>}
               </div>
+
               <div className="col-span-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Address *</label>
-                <textarea 
-                    value={selectedHub.address} 
-                    onChange={(e) => setSelectedHub((h) => ({ ...h, address: e.target.value }))} 
-                    placeholder="Full delivery address..." rows={2} 
-                    className={inputCls(!!errors.address) + " resize-none"}
-                    onBlur={handleAddressLookup}
-                    
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Address *
+                </label>
+                <textarea
+                  value={selectedHub.address}
+                  onChange={(e) => {
+                    setSelectedHub((h) => ({ ...h, address: e.target.value }));
+                    setAddressError(""); // clear error when user types
+                  }}
+                  placeholder="Full delivery address..."
+                  rows={2}
+                  className={inputCls(!!(errors.address || addressError)) + " resize-none"}
                 />
-                    {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
+                {(errors.address || addressError) && (
+                  <p className="text-red-400 text-xs mt-1">{addressError || errors.address}</p>
+                )}
               </div>
             </div>
+
             <div className="flex justify-end gap-3 mt-6">
-              <button onClick={closeModal} className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={() => validateStep1() && setMapStep(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-all hover:-translate-y-0.5">
+              <button
+                onClick={closeModal}
+                className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              {/* ✅ handleNext: validates → auto-lookup coords → setMapStep(true) */}
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-all hover:-translate-y-0.5"
+              >
                 Next — Pin Location
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </button>
             </div>
           </div>
         )}
 
-        {/* ADD/EDIT Step 2 */}
+        {/* ADD/EDIT — Step 2: Map Pin */}
         {(modalMode === "add" || modalMode === "edit") && mapStep && (
           <div className="flex min-h-[460px]">
             <div className="w-56 shrink-0 p-5 border-r border-gray-100 bg-gray-50 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className="bg-white border border-gray-200 rounded-xl p-3.5">
                   <p className="text-sm font-semibold text-gray-700">Click on the map to pin</p>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">Or enter coordinates manually below.</p>
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    Or enter coordinates manually below.
+                  </p>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Latitude</label>
-                  <input type="number" step="0.0001" value={selectedHub.latitude || ""} onChange={(e) => setSelectedHub((h) => ({ ...h, latitude: parseFloat(e.target.value) || 0 }))} placeholder="6.9271" className={inputCls() + " font-mono"} />
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Latitude
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={selectedHub.latitude || ""}
+                    onChange={(e) =>
+                      setSelectedHub((h) => ({ ...h, latitude: parseFloat(e.target.value) || 0 }))
+                    }
+                    placeholder="6.9271"
+                    className={inputCls() + " font-mono"}
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Longitude</label>
-                  <input type="number" step="0.0001" value={selectedHub.longitude || ""} onChange={(e) => setSelectedHub((h) => ({ ...h, longitude: parseFloat(e.target.value) || 0 }))} placeholder="79.8612" className={inputCls() + " font-mono"} />
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                    Longitude
+                  </label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    value={selectedHub.longitude || ""}
+                    onChange={(e) =>
+                      setSelectedHub((h) => ({ ...h, longitude: parseFloat(e.target.value) || 0 }))
+                    }
+                    placeholder="79.8612"
+                    className={inputCls() + " font-mono"}
+                  />
                 </div>
+
                 {errors.latitude && <p className="text-red-400 text-xs">{errors.latitude}</p>}
               </div>
+
               <div className="space-y-2">
-                <button onClick={handleSave} className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors">
+                <button
+                  onClick={handleSave}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 transition-colors"
+                >
                   {modalMode === "add" ? "Create Hub" : "Save Changes"}
                 </button>
-                <button onClick={() => setMapStep(false)} className="w-full py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-white transition-colors">← Back</button>
+                <button
+                  onClick={() => setMapStep(false)}
+                  className="w-full py-2.5 rounded-xl text-sm font-medium text-gray-600 border border-gray-200 hover:bg-white transition-colors"
+                >
+                  ← Back
+                </button>
               </div>
             </div>
+
             <div className="flex-1 p-4">
-              <CargoMap lat={selectedHub.latitude} lng={selectedHub.longitude} height="100%"
-                onChange={(lat: number, lng: number) => setSelectedHub((h) => ({ ...h, latitude: lat, longitude: lng }))} />
+              <CargoMap
+                lat={selectedHub.latitude}
+                lng={selectedHub.longitude}
+                height="100%"
+                onChange={(lat: number, lng: number) =>
+                  setSelectedHub((h) => ({ ...h, latitude: lat, longitude: lng }))
+                }
+              />
             </div>
           </div>
         )}

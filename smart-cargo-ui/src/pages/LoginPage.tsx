@@ -27,12 +27,11 @@ const SmartCargoLogin = () => {
     return () => clearTimeout(t);
   }, []);
 
-if (isLoading){
-  <LoadingScreen />
-}
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
-
-const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setIsLoading(true);
 
@@ -40,8 +39,9 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
   try {
      const response = await login(formData);
-       setIsLoading(true)
-      authenticate(response.access_token);
+
+      authenticate(response.accessToken, response.user);
+      console.log("Login successful. User data:", response.user);
       toast.success(`Welcome, ${response.user.email}`);
       navigate("/dashboard");
    
@@ -50,7 +50,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
        if(axios.isAxiosError(error)){
           toast.error(error.message)
         }else{
-          toast.error("something went worng")
+          toast.error("something went wrong")
         }
 
 
@@ -77,7 +77,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-white font-[Segoe_UI,system-ui,-apple-system,sans-serif]">
+    <div className="flex h-screen overflow-hidden bg-white font-['Poppins',sans-serif]">
 
       {/* LEFT PANEL */}
       <div
@@ -119,10 +119,10 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
             <span className="text-xs font-medium text-white/90 tracking-[0.4px]">Real-time Tracking Active</span>
           </div>
 
-          <h1 className="font-['Georgia','Times_New_Roman',serif] text-[48px] text-white leading-[1.1] tracking-tight mb-5 mt-0">
+          <h1 className="font-['Georgia','Times_New_Roman',serif] text-[54px] text-white leading-[1.1] tracking-tight mb-5 mt-0">
             Logistics,<br/>Reimagined<br/>for 2025.
           </h1>
-          <p className="text-[15px] leading-[1.7] font-light text-white/72 max-w-[340px] m-0">
+          <p className="text-[17px] leading-[1.7] font-light text-white/72 max-w-[340px] m-0">
             One platform to track, manage, and optimize your entire cargo operations — from first mile to last delivery.
           </p>
 
@@ -131,8 +131,8 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
             {stats.map((s, i) => (
               <div key={i}
                 className={`flex-1 ${i > 0 ? "pl-6 border-l border-white/20" : ""} ${i < 2 ? "pr-6" : ""}`}>
-                <div className="font-['Georgia',serif] text-[30px] font-bold text-white leading-none">{s.num}</div>
-                <div className="text-xs mt-1 font-light text-white/60">{s.label}</div>
+                <div className="font-['Georgia',serif] text-[34px] font-bold text-white leading-none">{s.num}</div>
+                <div className="text-sm mt-1 font-light text-white/60">{s.label}</div>
               </div>
             ))}
           </div>
@@ -149,13 +149,13 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
           {/* Header */}
           <div className="mb-9">
-            <div className="text-[11px] font-semibold uppercase tracking-[2px] text-[#ff6b1a] mb-2.5">
+            <div className="text-[18px] font-semibold uppercase tracking-[2px] text-[#ff6b1a] mb-2.5">
               Welcome Back
             </div>
-            <h2 className="font-['Georgia',serif] text-[34px] text-[#111] leading-[1.15] tracking-tight m-0">
+            <h2 className="font-['Georgia',serif] text-[38px] text-[#111] leading-[1.15] tracking-tight m-0">
               Sign in to<br/>your account
             </h2>
-            <p className="text-sm text-[#aaa] mt-2.5 leading-relaxed mb-0">
+            <p className="text-base text-[#aaa] mt-2.5 leading-relaxed mb-0">
               Enter your credentials to access the dashboard.
             </p>
           </div>
@@ -164,7 +164,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
             {/* Email */}
             <div className="mb-4">
-              <label className="block text-[12.5px] font-semibold text-[#555] mb-2">Email Address</label>
+              <label className="block text-[14px] font-semibold text-[#555] mb-2">Email Address</label>
               <div className="relative">
                 <span className={`absolute top-1/2 -translate-y-1/2 left-[15px] pointer-events-none flex transition-colors duration-200 ${iconColor("email")}`}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -182,7 +182,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
             {/* Password */}
             <div className="mb-4">
-              <label className="block text-[12.5px] font-semibold text-[#555] mb-2">Password</label>
+              <label className="block text-[14px] font-semibold text-[#555] mb-2">Password</label>
               <div className="relative">
                 <span className={`absolute top-1/2 -translate-y-1/2 left-[15px] pointer-events-none flex transition-colors duration-200 ${iconColor("password")}`}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -207,18 +207,18 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 
             {/* Remember / Forgot */}
             <div className="flex items-center justify-between mb-7 mt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-[13.5px] text-[#888]">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-[15px] text-[#888]">
                 <input type="checkbox" checked={remember}
                   onChange={e => setRemember(e.target.checked)}
                   className="w-4 h-4 cursor-pointer accent-[#ff6b1a]" />
                 Remember me
               </label>
-              <a href="#" className="text-[13.5px] font-semibold text-[#ff6b1a] no-underline">Forgot password?</a>
+              <a href="#" className="text-[15px] font-semibold text-[#ff6b1a] no-underline">Forgot password?</a>
             </div>
 
             {/* Submit */}
             <button type="submit" disabled={isLoading}
-              className={`relative w-full h-[52px] text-[15px] font-bold text-white rounded-[13px] border-none
+              className={`relative w-full h-[52px] text-[16px] font-bold text-white rounded-[13px] border-none
                 flex items-center justify-center gap-2 overflow-hidden transition-all duration-[180ms]
                 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(255,107,26,.42)]
                 ${isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer"}`}
@@ -251,7 +251,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
           </div>
 
           {/* SSO */}
-          <button className="w-full h-12 text-sm font-semibold text-[#555] rounded-xl
+          <button className="w-full h-12 text-base font-semibold text-[#555] rounded-xl
             border-[1.5px] border-[#e8e8e8] bg-white cursor-pointer
             flex items-center justify-center gap-2
             hover:border-[#ff6b1a] hover:bg-[#fffaf7]
@@ -265,7 +265,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
             Continue with SSO
           </button>
 
-          <p className="text-center text-[13px] text-[#aaa] mt-7">
+          <p className="text-center text-[14px] text-[#aaa] mt-7">
             Don't have an account?{" "}
             <a href="#" className="font-semibold text-[#ff6b1a] no-underline">Request Access</a>
           </p>

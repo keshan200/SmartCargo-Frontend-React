@@ -2,14 +2,13 @@ import { Outlet } from "react-router-dom"
 
 import Sidebar from "../components/SideBar"
 import Navbar from "../components/Navbar";
-import LoadingScreen from "../components/Loading";
+import AccessDenied from "./AccessDenied";
+import { useAuth } from "../context/useAuth";
 
 
 
 const AdminRoutes =  () => {
-    
-const isLoggedIn = true; 
-  const isAuthenticating = false;
+    const { isLoggedIn, isAuthenticating } = useAuth();
  
  if(isAuthenticating)return<div>Loading........</div>
 
@@ -30,10 +29,7 @@ const isLoggedIn = true;
           </div>
         </>
       ) : (
-        <div className="w-full h-full flex justify-center items-center">
-          {/**unauthorized oahe */}
-          <LoadingScreen />
-        </div>
+        <AccessDenied />
       )}
        </div>
     )

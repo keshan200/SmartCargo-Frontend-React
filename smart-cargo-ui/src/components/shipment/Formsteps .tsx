@@ -7,7 +7,10 @@ import { HubSelector } from "./Hubselector";
 import { useGeocode } from "./Utils";
 import { Icon, Label, Row, Sel } from "./Ui";
 
-// ─── Step Bar ─────────────────────────────────────────────────────────────────
+
+
+
+
 const STEPS = [
   { id: 1, label: "Sender",    icon: <Icon.User /> },
   { id: 2, label: "Receiver",  icon: <Icon.User /> },
@@ -15,6 +18,22 @@ const STEPS = [
   { id: 4, label: "Logistics", icon: <Icon.Pin /> },
   { id: 5, label: "Payment",   icon: <Icon.Card /> },
 ];
+
+
+
+//nearst hub eke gann methan use wenne phytogorous
+function nearestHub(hubs: Hub[], lat: number, lng: number): string {
+    let best = "";
+    let bestDist = Infinity;
+    for (const h of hubs) {
+        const d = Math.hypot(h.latitude - lat, h.longitude - lng);
+        if (d < bestDist) { bestDist = d; best = h._id; }
+    }
+    return best;
+}
+
+
+
 
 export const StepBar = ({ current }: { current: number }) => (
   <div className="flex items-center justify-center gap-0 mb-6">
@@ -43,7 +62,10 @@ export const StepBar = ({ current }: { current: number }) => (
 );
 
 
-// ─── Step 1 — Sender Info ─────────────────────────────────────────────────────
+
+
+
+//  Step 1 — Sender Info 
 export const Step1 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
@@ -80,7 +102,12 @@ export const Step1 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
 );
 
 
-// ─── Step 2 — Receiver Info ───────────────────────────────────────────────────
+
+
+
+
+
+// Step 2 — Receiver Info 
 export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
@@ -116,7 +143,11 @@ export const Step2 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
   </div>
 );
 
-// ─── Step 3 — Package Details ─────────────────────────────────────────────────
+
+
+
+
+//  Step 3 — Package Details 
 export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm, v: any) => void }) => (
   <div className="space-y-3">
     <Row>
@@ -156,18 +187,13 @@ export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
   </div>
 );
 
-// ─── Nearest hub helper ───────────────────────────────────────────────────────
-function nearestHub(hubs: Hub[], lat: number, lng: number): string {
-  let best = "";
-  let bestDist = Infinity;
-  for (const h of hubs) {
-    const d = Math.hypot(h.latitude - lat, h.longitude - lng);
-    if (d < bestDist) { bestDist = d; best = h._id; }
-  }
-  return best;
-}
 
-// ─── Step 4 — Logistics ───────────────────────────────────────────────────────
+
+
+
+
+//  Step 4 — Logistics 
+// Step 4 — Logistics
 export const Step4 = ({
   f,
   set,
@@ -181,41 +207,45 @@ export const Step4 = ({
 }) => {
   const [hubs, setHubs] = useState<Hub[]>([]);
 
-  // ✅ city + postal code දෙකම ඇති වෙලාවෙ විතරක් fire වෙනවා
-  // ✅ "Sri Lanka" මෙතනම් — useGeocode ඇතුළෙ duplicate add වෙන්නේ නෑ
+  // ── Geocode SENDER address to find nearest pickup hub ──────────────────────
   const addressQuery =
     f.receiver_city && f.receiver_postal_code
       ? `${f.receiver_city}, ${f.receiver_postal_code}, Sri Lanka`
       : "";
 
   const { result: geoResult, status: geoStatus } = useGeocode(addressQuery);
-  const prevGeoRef = useRef<string>("");
 
-  // When geocode resolves → atomically set coords + nearest hub
+  // ── Auto-select nearest hub once geocode + hubs are ready ──────────────────
   useEffect(() => {
     if (!geoResult || hubs.length === 0) return;
-    const key = `${geoResult.lat},${geoResult.lng}`;
-    if (key === prevGeoRef.current) return;
-    prevGeoRef.current = key;
 
-    const lat = parseFloat(geoResult.lat.toFixed(6));
-    const lng = parseFloat(geoResult.lng.toFixed(6));
-    const nearestId = nearestHub(hubs, lat, lng);
+    const nearestId = nearestHub(hubs, geoResult.lat, geoResult.lng);
 
     if (setBulk) {
-      // ✅ Single atomic setState — no stale closure race
       setBulk({
-        delivery_lat: lat,
-        delivery_lng: lng,
         ...(nearestId ? { current_hub_id: nearestId } : {}),
       });
-    } else {
-      set("delivery_lat", lat);
-      set("delivery_lng", lng);
-      if (nearestId) set("current_hub_id", nearestId);
     }
-  }, [geoResult, hubs, set, setBulk]);
+  }, [geoResult, hubs]);
 
+  // ── Receiver geocode → delivery pin (kept separate) ────────────────────────
+  const receiverQuery =
+    f.receiver_city && f.receiver_postal_code
+      ? `${f.receiver_city}, ${f.receiver_postal_code}, Sri Lanka`
+      : "";
+
+  const { result: receiverGeo } = useGeocode(receiverQuery);
+
+  useEffect(() => {
+    if (!receiverGeo || !setBulk) return;
+
+    setBulk({
+      delivery_lat: parseFloat(receiverGeo.lat.toFixed(6)),
+      delivery_lng: parseFloat(receiverGeo.lng.toFixed(6)),
+    });
+  }, [receiverGeo]);
+
+  // 
   const handleHubsLoaded = (loaded: Hub[]) => {
     setHubs(loaded);
     onHubsLoaded?.(loaded);
@@ -229,9 +259,9 @@ export const Step4 = ({
     error:   "text-red-400",
   };
   const geoStatusLabel: Record<string, string> = {
-    loading: "Locating address…",
-    done:    "✓ Address located — nearest hub auto-selected",
-    error:   "Address not found — please select a hub manually",
+    loading: "Locating sender address…",
+    done:    "✓ Sender located — nearest pickup hub auto-selected",
+    error:   "Sender address not found — please select a hub manually",
   };
 
   return (
@@ -259,7 +289,15 @@ export const Step4 = ({
   );
 };
 
-// ─── Step 5 — Payment & Summary ───────────────────────────────────────────────
+
+
+
+
+
+
+
+
+// Payment & Summary 
 export const Step5 = ({
   f,
   set,

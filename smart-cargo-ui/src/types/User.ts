@@ -13,6 +13,11 @@ export interface IUser {
   role: UserRoleType; 
   createdAt: string;         
   updatedAt: string;
+
+  hub?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 export interface IUserSignup extends Omit<IUser, '_id' | 'createdAt' | 'updatedAt'> {

@@ -23,12 +23,11 @@ export const AuthProvider  = ({children}:AuthProviderProps) => {
    const [user, setUser] = useState<IUser | null>(null)
    
 
-   const login  =  (token:string) => {
-    setIsLoggedIn(true)
-    setAccessToken(token)
- 
-   
-   }
+  const login = (token: string, userData: IUser) => { 
+  setIsLoggedIn(true);
+  setAccessToken(token);
+  setUser(userData); 
+ };
    
    const logout =  () => setIsLoggedIn(false)
 

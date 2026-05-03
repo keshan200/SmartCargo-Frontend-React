@@ -1,4 +1,71 @@
-import { useState } from "react";
+// Icon Components
+const PackageIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+  </svg>
+);
+
+const TruckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="3" width="15" height="13" rx="1" />
+    <path d="M16 8h4l3 4.5V16h-7V8z" />
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="18.5" r="2.5" />
+  </svg>
+);
+
+const BuildingIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9,22 9,12 15,12 15,22" />
+  </svg>
+);
+
+const BikeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18.5" cy="17.5" r="3.5" />
+    <circle cx="5.5" cy="17.5" r="3.5" />
+    <path d="M12 14V4M9 14H3v3h2M15 14h6v3h-2" />
+  </svg>
+);
+
+const CheckCircleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const BarChartIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="20" x2="12" y2="10" />
+    <line x1="18" y1="20" x2="18" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="16" />
+  </svg>
+);
 
 const shipments = [
   { id: "SC-2024-8821", name: "Nuwan Perera", from: "Negombo", to: "Colombo", weight: "4.2 kg", status: "In Transit" },
@@ -18,16 +85,16 @@ const statusConfig: Record<string, { color: string; dot: string; bar: string }> 
 };
 
 const statusCounts = [
-  { label: "Picked Up",        count: 148, icon: "📦", pct: 10 },
-  { label: "In Transit",       count: 234, icon: "🚚", pct: 18 },
-  { label: "Sorting",          count: 89,  icon: "🏭", pct: 7  },
-  { label: "Out for Delivery", count: 187, icon: "🛵", pct: 15 },
-  { label: "Delivered",        count: 892, icon: "✅", pct: 70 },
+  { label: "Picked Up",        count: 148, icon: PackageIcon, pct: 10 },
+  { label: "In Transit",       count: 234, icon: TruckIcon, pct: 18 },
+  { label: "Sorting",          count: 89,  icon: BuildingIcon, pct: 7  },
+  { label: "Out for Delivery", count: 187, icon: BikeIcon, pct: 15 },
+  { label: "Delivered",        count: 892, icon: CheckCircleIcon, pct: 70 },
 ];
 
 export default function SmartCargoDashboard() {
   return (
-    <div className="min-h-screen bg-gray-50 px-8 py-6 font-sans">
+    <div className="min-h-screen bg-gray-50 px-8 py-6 font-['Poppins',sans-serif]">
       {/* Header */}
       <div className="flex items-center justify-between mb-7">
         <div>
@@ -35,14 +102,6 @@ export default function SmartCargoDashboard() {
           <p className="text-xs text-gray-400 mt-0.5">Saturday, 18 April 2026</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search shipments..."
-              className="text-xs border border-gray-200 rounded-lg px-3 py-2 pr-8 outline-none focus:border-orange-300 w-48 bg-white text-gray-700 placeholder-gray-400"
-            />
-            <span className="absolute right-2.5 top-2 text-gray-400 text-xs">🔍</span>
-          </div>
           <button className="text-xs bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
             + New Shipment
           </button>
@@ -52,9 +111,8 @@ export default function SmartCargoDashboard() {
       {/* Stat Cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-orange-500 rounded-2xl p-5 relative overflow-hidden">
-          <div className="absolute right-4 top-4 opacity-10 text-7xl">📦</div>
-          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-4">
-            <span className="text-lg">📦</span>
+          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-4 text-white">
+            <PackageIcon />
           </div>
           <p className="text-3xl text-white font-semibold">1,284</p>
           <p className="text-xs text-orange-100 mt-0.5">Total Shipments</p>
@@ -62,13 +120,13 @@ export default function SmartCargoDashboard() {
         </div>
 
         {[
-          { icon: "✅", value: "892", label: "Delivered",       sub: "↑ 8% vs last month" },
-          { icon: "🚚", value: "23",  label: "Active Vehicles", sub: "↑ 3 new this week"  },
-          { icon: "👥", value: "156", label: "Total Users",     sub: "↑ 15 new users"     },
+          { icon: CheckCircleIcon, value: "892", label: "Delivered",       sub: "↑ 8% vs last month" },
+          { icon: TruckIcon, value: "23",  label: "Active Vehicles", sub: "↑ 3 new this week"  },
+          { icon: UsersIcon, value: "156", label: "Total Users",     sub: "↑ 15 new users"     },
         ].map((c) => (
           <div key={c.label} className="bg-white rounded-2xl p-5 border border-gray-100">
-            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-4">
-              <span className="text-lg">{c.icon}</span>
+            <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-4 text-gray-600">
+              <c.icon />
             </div>
             <p className="text-3xl text-gray-900 font-semibold">{c.value}</p>
             <p className="text-xs text-gray-400 mt-0.5">{c.label}</p>
@@ -120,11 +178,12 @@ export default function SmartCargoDashboard() {
             <div className="space-y-3">
               {statusCounts.map((s) => {
                 const cfg = statusConfig[s.label];
+                const IconComponent = s.icon;
                 return (
                   <div key={s.label}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm">{s.icon}</span>
+                        <span className="text-gray-600 w-5 h-5 flex items-center justify-center"><IconComponent /></span>
                         <span className="text-xs text-gray-600">{s.label}</span>
                       </div>
                       <span className="text-xs text-gray-800 font-medium">{s.count}</span>
@@ -142,16 +201,16 @@ export default function SmartCargoDashboard() {
             <p className="text-sm text-gray-800 font-medium mb-3">Quick Actions</p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { icon: "➕", label: "New Shipment"    },
-                { icon: "📍", label: "Track Package"   },
-                { icon: "📊", label: "Generate Report" },
-                { icon: "🚚", label: "Assign Vehicle"  },
+                { icon: PlusIcon, label: "New Shipment"    },
+                { icon: MapPinIcon, label: "Track Package"   },
+                { icon: BarChartIcon, label: "Generate Report" },
+                { icon: TruckIcon, label: "Assign Vehicle"  },
               ].map((a) => (
                 <button
                   key={a.label}
                   className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-gray-50 hover:bg-orange-50 hover:text-orange-500 transition-colors text-gray-500"
                 >
-                  <span className="text-lg">{a.icon}</span>
+                  <span className="w-5 h-5 flex items-center justify-center"><a.icon /></span>
                   <span className="text-[10px] leading-tight">{a.label}</span>
                 </button>
               ))}

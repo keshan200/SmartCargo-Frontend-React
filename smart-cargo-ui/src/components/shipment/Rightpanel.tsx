@@ -1,4 +1,3 @@
-import React from "react";
 import type { ShipmentForm } from "../../types/shipment";
 import { calcPrice } from "./Utils";
 import CargoMap from "../Map";
@@ -6,14 +5,14 @@ import { Icon } from "./Ui";
 import { PricingConfig } from "./Constants";
 
 
-// ─── Right Panel (Map + Price) ────────────────────────────────────────────────
+//  Right Panel (Map + Price) 
 export const RightPanel = ({
   form,
   onMapClick,
   onGPS,
   mapKey,
   hubCoords,
-  senderCoords,   // ← NEW: geocoded sender location for route start
+  senderCoords,
 }: {
   form: ShipmentForm;
   onMapClick: (lat: number, lng: number) => void;
@@ -23,22 +22,15 @@ export const RightPanel = ({
   senderCoords?: { lat: number; lng: number } | null;
 }) => {
   const pr = calcPrice(form);
-
-  // Route logic:
-  // - If delivery pin is set AND hub is selected → route from hub → delivery
-  // - If only sender is geocoded (step 1, no delivery pin yet) → route from sender → hub
-  // - If both exist → prefer hub → delivery
   const hasDelivery = form.delivery_lat !== null && form.delivery_lng !== null;
 
   let routeFrom: { lat: number; lng: number } | undefined;
   let routeTo:   { lat: number; lng: number } | undefined;
 
   if (hubCoords && hasDelivery) {
-    // Hub → Delivery (main route)
     routeFrom = hubCoords;
     routeTo   = { lat: form.delivery_lat!, lng: form.delivery_lng! };
   } else if (senderCoords && hubCoords) {
-    // Sender → Hub (preview while filling step 1/2)
     routeFrom = senderCoords;
     routeTo   = hubCoords;
   }
@@ -46,6 +38,7 @@ export const RightPanel = ({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 h-0 relative">
+       
         <CargoMap
           key={mapKey}
           lat={form.delivery_lat ?? undefined}
@@ -54,6 +47,8 @@ export const RightPanel = ({
           onChange={(lat, lng) => onMapClick(lat, lng)}
           routeFrom={routeFrom}
           routeTo={routeTo}
+          hubCoords={hubCoords}
+          hubName={hubCoords ? "Selected Hub" : "Hub"}
         />
 
         <button
@@ -79,7 +74,7 @@ export const RightPanel = ({
 
       {/* Price Breakdown */}
       <div className="bg-white border-t border-gray-100 p-4 shrink-0">
-        <p className="text-[16px] text-orange-500  tracking-widest mb-3 font-sans">Estimated Price</p>
+        <p className="text-[16px] text-orange-500 tracking-widest mb-3 font-sans">Estimated Price</p>
         <div className="space-y-1.5">
           <div className="flex justify-between">
             <span className="text-xs text-gray-400">Base fee</span>
@@ -109,7 +104,7 @@ export const RightPanel = ({
   );
 };
 
-// ─── Success Screen ───────────────────────────────────────────────────────────
+//  Success Screen 
 export const Success = ({ id, onReset }: { id: string; onReset: () => void }) => (
   <div className="flex flex-col items-center py-10 text-center">
     <div className="text-orange-500 mb-3 animate-bounce"><Icon.CheckCircle /></div>

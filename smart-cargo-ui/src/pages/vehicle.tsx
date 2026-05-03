@@ -316,7 +316,7 @@ const handleSave = async () => {
     activeStatuses.length > 0 || activeTypes.length > 0 || search;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-['Poppins',sans-serif]">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 px-7 py-5 flex items-center justify-between">
         <div>
