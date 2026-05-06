@@ -189,7 +189,7 @@ const CargoMap: React.FC<CargoMapProps> = ({
     <div style={{ height, width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
       <MapContainer
         center={
-          // Map mount වෙන විට hub location ේ center කරයි (available නම්)
+          // Map mount වෙන විට hub location ේ center කරයි (available නම්
           hubCoords
             ? [hubCoords.lat, hubCoords.lng]
             : SL_CENTER

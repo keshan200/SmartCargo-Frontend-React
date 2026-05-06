@@ -6,7 +6,7 @@ import { StepBar, Step1, Step2, Step3, Step4, Step5 } from "./Formsteps ";
 import { ShipmentDetailModal, MapModal } from "./Modals";
 import { Success, RightPanel } from "./Rightpanel";
 import { Icon, Label, StatusBadge } from "./Ui";
-import { createShipment } from "../../services/shipment.service";
+import { createShipment, allshipments } from "../../services/shipment.service";
 import { useSenderGeocode } from "./Utils";
 
 
@@ -261,20 +261,28 @@ export const ShipmentsTab = () => {
   const [selected,     setSelected]     = useState<Shipment | null>(null);
   const [mapShipment,  setMapShipment]  = useState<Shipment | null>(null);
 
-  useState(() => {
+  useEffect(() => {
+    let active = true;
+
     (async () => {
       try {
-        const res = await fetch("/api/shipments");
-        if (!res.ok) throw new Error();
-        const d = await res.json();
-        setShipments(Array.isArray(d) ? d : (d.data ?? d.shipments ?? []));
-      } catch {
+        const data = await allshipments();
+        console.log("[ShipmentsTab] fetched shipments", data);
+        if (!active) return;
+        setShipments(data);
+      } catch (err) {
+        console.error("[ShipmentsTab] failed to fetch shipments", err);
+        if (!active) return;
         setShipments(MOCK_SHIPMENTS);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
-  });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filtered = shipments.filter(s => {
     if (filterDate) {
@@ -282,8 +290,11 @@ export const ShipmentsTab = () => {
       if (created !== filterDate) return false;
     }
     if (filterCity   && !s.receiver_city.toLowerCase().includes(filterCity.toLowerCase()))   return false;
-    if (filterSender && !s.sender_id.toLowerCase().includes(filterSender.toLowerCase()))     return false;
-    if (filterPhone  && !s.receiver_phone.includes(filterPhone))                             return false;
+    if (filterSender) {
+      const senderId = s.sender_id ?? "";
+      if (!senderId.toLowerCase().includes(filterSender.toLowerCase())) return false;
+    }
+    if (filterPhone && !s.receiver_phone.includes(filterPhone)) return false;
     return true;
   });
 
@@ -388,7 +399,9 @@ export const ShipmentsTab = () => {
                     <p className="text-[10px] text-gray-400 truncate">{s.receiver_email}</p>
                   </div>
                   <p className="text-xs text-gray-600 font-medium">{s.receiver_city}</p>
-                  <p className="text-[11px] text-gray-500 font-mono truncate" title={s.sender_id}>…{s.sender_id.slice(-8)}</p>
+                  <p className="text-[11px] text-gray-500 font-mono truncate" title={s.sender_id ?? ""}>
+                    …{(s.sender_id ?? "").slice(-8)}
+                  </p>
                   <p className="text-xs text-gray-600">{s.receiver_phone}</p>
                   <StatusBadge status={s.status} />
                   <div className="flex items-center gap-1.5 pl-2">

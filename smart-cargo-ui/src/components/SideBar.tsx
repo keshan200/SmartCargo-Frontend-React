@@ -108,7 +108,7 @@ const NavButton = ({ item, isActive, onClick }: NavButtonProps) => (
       onClick={onClick}
       className={`
         group flex w-full items-center gap-3 rounded-2xl px-4 py-3
-        text-[18px] transition-all duration-200 cursor-pointer
+        text-[16px] transition-all duration-200 cursor-pointer
         ${isActive
           ? "bg-orange-50 text-orange-500"
           : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"}
@@ -164,7 +164,7 @@ const Sidebar = () => {
             <circle cx="18.5" cy="18.5" r="2.5" fill="white" />
           </svg>
         </div>
-        <div className="text-2xl tracking-tight">
+        <div className="text-xl tracking-tight">
           <span className="text-gray-900" style={{ fontWeight: 700 }}>Smart</span>
           <span className="text-orange-500" style={{ fontWeight: 700 }}>Cargo</span>
         </div>
@@ -173,7 +173,7 @@ const Sidebar = () => {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-4 pb-4">
         <p
-          className="mb-3 mt-2 px-3 text-[14px] text-gray-400 uppercase"
+          className="mb-3 mt-2 px-3 text-[12px] text-gray-400 uppercase"
           style={{ letterSpacing: "0.12em", fontWeight: 500 }}
         >
           Main Menu
@@ -190,7 +190,7 @@ const Sidebar = () => {
         </ul>
 
         <p
-          className="mb-3 mt-7 px-3 text-[14px] text-gray-400 uppercase"
+          className="mb-3 mt-7 px-3 text-[12px] text-gray-400 uppercase"
           style={{ letterSpacing: "0.12em", fontWeight: 500 }}
         >
           Reports
@@ -219,10 +219,10 @@ const Sidebar = () => {
           AK
         </div>
         <div className="flex-1 min-w-0">
-          <p className="truncate text-[18px] text-gray-800" style={{ fontWeight: 600 }}>
+          <p className="truncate text-[16px] text-gray-800" style={{ fontWeight: 600 }}>
             Ashan Karunaratne
           </p>
-          <p className="text-[16px] text-gray-400" style={{ fontWeight: 400 }}>
+          <p className="text-[14px] text-gray-400" style={{ fontWeight: 400 }}>
             Administrator
           </p>
         </div>

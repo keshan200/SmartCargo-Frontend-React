@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 const emptyHub: Hub = { _id:"",hub_name: "", city: "", address: "", contact_no: "", latitude: 0, longitude: 0 };
 
 export default function HubPage() {
+ 
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedHub, setSelectedHub] = useState<Hub>(emptyHub);

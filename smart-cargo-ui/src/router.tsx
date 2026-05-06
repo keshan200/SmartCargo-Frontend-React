@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Layout from "./pages/Layout";
 import HubPage from "./pages/HubPage";
 import ShipmentPage from "./pages/ship";
+import TrackingPage from "./pages/TrackingPage";
 import VehicleDirectory from "./pages/vehicle";
 
 import AddUserPagggge from "./pages/AddUserPage";
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
             {path:"/dashboard", element: <Dashboard />},
             {path:"/hubs", element: <HubPage />},
             {path:"/shipments", element: <ShipmentPage />},
+            {path:"/tracking", element: <TrackingPage />},
             {path:"/vehicle", element: <VehicleDirectory />},
             {path:"/users", element: <AddUserPagggge />},
 
