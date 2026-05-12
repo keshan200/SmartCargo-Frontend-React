@@ -29,14 +29,14 @@ export default function ShipmentPage() {
             <button
               type="button"
               onClick={() => setActiveTab("list")}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:text-orange-500 transition shadow-sm"
+              className="flex items-center gap-2 px-4 py-1 text-sm  text-gray-600 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:text-orange-500 transition shadow-sm"
             >
               <Icon.Search /> Track Shipment
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("list")}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:text-orange-500 transition shadow-sm"
+              className="flex items-center gap-2 px-4 py-1 text-sm  text-gray-600 bg-white border border-gray-200 rounded-xl hover:border-orange-300 hover:text-orange-500 transition shadow-sm"
             >
               <Icon.History /> History
             </button>
@@ -75,7 +75,7 @@ export default function ShipmentPage() {
               key={s.label}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${s.bg} ${s.border}`}
             >
-              <span className="text-xl">{s.icon}</span>
+              <span className="text-sm">{s.icon}</span>
               <div>
                 <p className={`text-lg font-bold leading-none ${s.color}`}>
                   {s.value}

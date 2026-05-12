@@ -193,77 +193,56 @@ export const Step3 = ({ f, set }: { f: ShipmentForm; set: (k: keyof ShipmentForm
 
 
 //  Step 4 — Logistics 
-// Step 4 — Logistics
 export const Step4 = ({
   f,
   set,
   setBulk,
-  onHubsLoaded,
+  preloadedHubs = [],   // ← replaces onHubsLoaded + local hubs state
 }: {
   f: ShipmentForm;
   set: (k: keyof ShipmentForm, v: any) => void;
   setBulk?: (updates: Partial<ShipmentForm>) => void;
-  onHubsLoaded?: (hubs: Hub[]) => void;
+  preloadedHubs?: Hub[];
 }) => {
-  const [hubs, setHubs] = useState<Hub[]>([]);
-
-  // ── Geocode SENDER address to find nearest pickup hub ──────────────────────
+  // ── Geocode RECEIVER address → find nearest pickup hub ────────────────────
   const addressQuery =
     f.receiver_city && f.receiver_postal_code
       ? `${f.receiver_city}, ${f.receiver_postal_code}, Sri Lanka`
       : "";
-
+ 
   const { result: geoResult, status: geoStatus } = useGeocode(addressQuery);
-
-  // ── Auto-select nearest hub once geocode + hubs are ready ──────────────────
+ 
+  // ── Auto-select nearest hub once geocode + hubs are ready ─────────────────
   useEffect(() => {
-    if (!geoResult || hubs.length === 0) return;
-
-    const nearestId = nearestHub(hubs, geoResult.lat, geoResult.lng);
-
-    if (setBulk) {
-      setBulk({
-        ...(nearestId ? { current_hub_id: nearestId } : {}),
-      });
-    }
-  }, [geoResult, hubs]);
-
-  // ── Receiver geocode → delivery pin (kept separate) ────────────────────────
-  const receiverQuery =
-    f.receiver_city && f.receiver_postal_code
-      ? `${f.receiver_city}, ${f.receiver_postal_code}, Sri Lanka`
-      : "";
-
-  const { result: receiverGeo } = useGeocode(receiverQuery);
-
+    if (!geoResult || preloadedHubs.length === 0) return;
+    const nearestId = nearestHub(preloadedHubs, geoResult.lat, geoResult.lng);
+    if (nearestId && setBulk) setBulk({ current_hub_id: nearestId });
+  }, [geoResult, preloadedHubs]);
+ 
+  // ── Receiver geocode → delivery pin ───────────────────────────────────────
+  const { result: receiverGeo } = useGeocode(addressQuery);
+ 
   useEffect(() => {
     if (!receiverGeo || !setBulk) return;
-
     setBulk({
       delivery_lat: parseFloat(receiverGeo.lat.toFixed(6)),
       delivery_lng: parseFloat(receiverGeo.lng.toFixed(6)),
     });
   }, [receiverGeo]);
-
-  // 
-  const handleHubsLoaded = (loaded: Hub[]) => {
-    setHubs(loaded);
-    onHubsLoaded?.(loaded);
-  };
-
-  const selectedHub = hubs.find(h => h._id === f.current_hub_id);
-
+ 
+  const selectedHub = preloadedHubs.find(h => h._id === f.current_hub_id);
+ 
   const geoStatusColor: Record<string, string> = {
     loading: "text-amber-500",
     done:    "text-green-500",
     error:   "text-red-400",
   };
   const geoStatusLabel: Record<string, string> = {
-    loading: "Locating sender address…",
-    done:    "✓ Sender located — nearest pickup hub auto-selected",
-    error:   "Sender address not found — please select a hub manually",
+    loading: "Locating receiver address…",
+    done:    "✓ Address located — nearest pickup hub auto-selected",
+    error:   "Address not found — please select a hub manually",
   };
-
+ 
   return (
     <div className="space-y-4">
       <div>
@@ -271,10 +250,11 @@ export const Step4 = ({
         <HubSelector
           selectedId={f.current_hub_id}
           onSelect={id => set("current_hub_id", id)}
-          onHubsLoaded={handleHubsLoaded}
+          // HubSelector still fetches for its own dropdown UI,
+          // but we no longer depend on onHubsLoaded for hubCoords.
         />
       </div>
-
+ 
       {geoStatus !== "idle" && (
         <p className={`text-[11px] font-medium ${geoStatusColor[geoStatus] ?? ""}`}>
           {geoStatusLabel[geoStatus]}
@@ -283,7 +263,7 @@ export const Step4 = ({
           )}
         </p>
       )}
-
+ 
       <p className="text-xs text-gray-400">Pin the delivery location using the map on the right →</p>
     </div>
   );

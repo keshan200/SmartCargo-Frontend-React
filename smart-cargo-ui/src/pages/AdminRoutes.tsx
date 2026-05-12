@@ -4,13 +4,14 @@ import Sidebar from "../components/SideBar"
 import Navbar from "../components/Navbar";
 import AccessDenied from "./AccessDenied";
 import { useAuth } from "../context/useAuth";
+import LoadingScreen from "../components/Loading";
 
 
 
 const AdminRoutes =  () => {
     const { isLoggedIn, isAuthenticating } = useAuth();
  
- if(isAuthenticating)return<div>Loading........</div>
+ if(isAuthenticating)return<div><LoadingScreen></LoadingScreen></div>
 
     return(
         

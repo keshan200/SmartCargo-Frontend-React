@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Cargo — Consignment Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #FF6B00;
+    --orange-light: #FF8C35;
+    --orange-pale: #FFF3EA;
+    --orange-mid: #FFE4CC;
+    --orange-dark: #CC5200;
+    --white: #FFFFFF;
+    --surface: #FAFAFA;
+    --gray-50: #F7F7F7;
+    --gray-100: #EFEFEF;
+    --gray-200: #E0E0E0;
+    --gray-400: #9E9E9E;
+    --gray-600: #616161;
+    --gray-800: #222222;
+    --green: #2E7D32;
+    --green-pale: #E8F5E9;
+    --blue: #1565C0;
+    --blue-pale: #E3F2FD;
+    --red: #B71C1C;
+    --red-pale: #FFEBEE;
+    --amber: #E65100;
+    --amber-pale: #FFF3E0;
+    --sidebar-w: 240px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--gray-50);
+    color: var(--gray-800);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    border-right: 1px solid var(--gray-100);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    top: 0; left: 0;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--gray-800);
+    line-height: 1.1;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--gray-400);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 10px 10px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--gray-600);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { background: var(--gray-50); color: var(--gray-800); }
+
+  .nav-item.active {
+    background: var(--orange-pale);
+    color: var(--orange);
+    font-weight: 500;
+  }
+
+  .nav-item.active i { color: var(--orange); }
+
+  .nav-item i {
+    width: 18px;
+    font-size: 15px;
+    text-align: center;
+    color: var(--gray-400);
+  }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--orange);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .sidebar-bottom {
+    padding: 12px 10px 16px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--orange-pale);
+    border: 2px solid var(--orange-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--orange-dark);
+  }
+
+  .user-info .name { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .user-info .role { font-size: 11px; color: var(--gray-400); }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-100);
+    padding: 0 28px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  .breadcrumb .active { color: var(--gray-800); font-weight: 500; }
+  .breadcrumb i { font-size: 11px; }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--orange);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--orange-dark); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-ghost:hover { background: var(--gray-50); color: var(--gray-800); }
+
+  .btn-icon {
+    width: 34px; height: 34px;
+    padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--gray-200);
+    background: transparent;
+    color: var(--gray-600);
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { background: var(--gray-50); color: var(--gray-800); }
+
+  /* ── PAGE CONTENT ── */
+  .content { padding: 24px 28px; flex: 1; }
+
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--gray-400);
+    margin-top: 5px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-card.amber::before { background: var(--amber); }
+
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card.orange .stat-icon { background: var(--orange-pale); color: var(--orange); }
+  .stat-card.green .stat-icon { background: var(--green-pale); color: var(--green); }
+  .stat-card.blue .stat-icon { background: var(--blue-pale); color: var(--blue); }
+  .stat-card.amber .stat-icon { background: var(--amber-pale); color: var(--amber); }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 5px;
+    font-weight: 400;
+  }
+
+  .stat-delta {
+    position: absolute;
+    top: 18px; right: 18px;
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.neutral { color: var(--gray-400); }
+
+  /* ── TABS ── */
+  .tabs-bar {
+    display: flex;
+    gap: 0;
+    background: var(--gray-100);
+    border-radius: 10px;
+    padding: 3px;
+    width: fit-content;
+    margin-bottom: 18px;
+  }
+
+  .tab {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    background: var(--white);
+    color: var(--gray-800);
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .tab-count {
+    background: var(--orange-pale);
+    color: var(--orange);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+  }
+
+  .tab.active .tab-count {
+    background: var(--orange);
+    color: white;
+  }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .filter-select {
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--gray-700);
+    cursor: pointer;
+    outline: none;
+    transition: border 0.15s;
+  }
+
+  .filter-select:focus { border-color: var(--orange); }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    margin-left: auto;
+  }
+
+  .search-box i { color: var(--gray-400); font-size: 13px; }
+
+  .search-box input {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--gray-800);
+    outline: none;
+    width: 180px;
+  }
+
+  .search-box input::placeholder { color: var(--gray-400); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-count {
+    font-size: 12px;
+    color: var(--gray-400);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+
+  .table-actions { display: flex; align-items: center; gap: 8px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: var(--gray-50);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--gray-100);
+    white-space: nowrap;
+  }
+
+  thead th:first-child { padding-left: 20px; }
+  thead th:last-child { padding-right: 20px; text-align: center; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.1s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--gray-50); }
+
+  tbody td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--gray-800);
+    vertical-align: middle;
+  }
+
+  tbody td:first-child { padding-left: 20px; }
+  tbody td:last-child { padding-right: 20px; }
+
+  .con-id {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--orange);
+  }
+
+  .vehicle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: var(--gray-100);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+  }
+
+  .route-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gray-800);
+  }
+
+  .route-arrow { color: var(--orange); font-size: 11px; }
+
+  .shipment-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--gray-600);
+    background: var(--orange-pale);
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  .weight-bar-wrap { display: flex; align-items: center; gap: 8px; }
+
+  .weight-bar {
+    width: 70px; height: 5px;
+    background: var(--gray-100);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .weight-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--orange);
+  }
+
+  .weight-fill.warn { background: var(--amber); }
+  .weight-fill.danger { background: var(--red); }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge i { font-size: 9px; }
+
+  .badge-transit { background: var(--blue-pale); color: var(--blue); }
+  .badge-preparing { background: var(--amber-pale); color: var(--amber); }
+  .badge-arrived { background: var(--green-pale); color: var(--green); }
+  .badge-dispatched { background: var(--orange-pale); color: var(--orange); }
+  .badge-cancelled { background: var(--red-pale); color: var(--red); }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .action-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--gray-200);
+    background: transparent;
+    color: var(--gray-600);
+    font-family: var(--font-body);
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .action-btn:hover { background: var(--gray-50); color: var(--gray-800); border-color: var(--gray-300); }
+
+  .action-btn.primary {
+    background: var(--orange-pale);
+    color: var(--orange);
+    border-color: var(--orange-mid);
+  }
+
+  .action-btn.primary:hover { background: var(--orange); color: white; }
+
+  /* ── MODAL OVERLAY ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    width: 640px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    transform: translateY(12px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-head {
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 1;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+
+  .modal-sub { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--gray-200);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-600);
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+
+  .modal-close:hover { background: var(--gray-100); }
+
+  .modal-body { padding: 22px 24px; }
+
+  .form-section {
+    margin-bottom: 22px;
+  }
+
+  .form-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--orange);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--orange-mid);
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-full { grid-column: 1 / -1; }
+
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+  }
+
+  .form-control {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--gray-800);
+    outline: none;
+    transition: border 0.15s;
+    width: 100%;
+  }
+
+  .form-control:focus { border-color: var(--orange); background: white; }
+
+  /* SHIPMENT SELECTOR */
+  .shipment-selector {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .selector-head {
+    background: var(--gray-50);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .selector-list { max-height: 200px; overflow-y: auto; }
+
+  .shipment-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .shipment-row:last-child { border-bottom: none; }
+  .shipment-row:hover { background: var(--orange-pale); }
+  .shipment-row.selected { background: var(--orange-pale); }
+
+  .ship-check {
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    color: transparent;
+    transition: all 0.1s;
+    flex-shrink: 0;
+  }
+
+  .shipment-row.selected .ship-check {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: white;
+  }
+
+  .ship-id { font-family: var(--font-display); font-size: 12px; color: var(--orange); font-weight: 600; min-width: 90px; }
+  .ship-dest { font-size: 12px; color: var(--gray-600); flex: 1; }
+  .ship-wt { font-size: 11px; font-weight: 600; color: var(--gray-800); background: var(--gray-100); padding: 2px 7px; border-radius: 5px; }
+
+  /* WEIGHT INDICATOR */
+  .weight-indicator {
+    background: var(--orange-pale);
+    border: 1px solid var(--orange-mid);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+  }
+
+  .wi-label { font-size: 12px; color: var(--orange-dark); font-weight: 500; }
+  .wi-value { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--orange); }
+  .wi-limit { font-size: 11px; color: var(--orange-dark); }
+
+  .wi-bar { margin-top: 8px; height: 6px; background: var(--orange-mid); border-radius: 3px; overflow: hidden; }
+  .wi-fill { height: 100%; background: var(--orange); border-radius: 3px; transition: width 0.3s; }
+
+  /* MODAL FOOTER */
+  .modal-foot {
+    padding: 16px 24px;
+    border-top: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--gray-50);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+
+  .modal-foot-note { font-size: 12px; color: var(--gray-400); }
+
+  /* ── DETAIL PANEL ── */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.2);
+    z-index: 200;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .detail-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .detail-panel {
+    width: 420px;
+    background: var(--white);
+    height: 100vh;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-overlay.open .detail-panel { transform: translateX(0); }
+
+  .detail-head {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 1;
+  }
+
+  .detail-id {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  .detail-body { padding: 20px 22px; flex: 1; }
+
+  .detail-section { margin-bottom: 22px; }
+
+  .detail-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--gray-400); flex-shrink: 0; margin-right: 16px; }
+  .detail-val { color: var(--gray-800); font-weight: 500; text-align: right; }
+
+  /* TRACKING TIMELINE */
+  .timeline { padding-left: 4px; }
+
+  .tl-item {
+    display: flex;
+    gap: 14px;
+    position: relative;
+    padding-bottom: 18px;
+  }
+
+  .tl-item:last-child { padding-bottom: 0; }
+
+  .tl-dot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 20px;
+  }
+
+  .tl-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--orange);
+    background: var(--white);
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .tl-dot.filled { background: var(--orange); }
+
+  .tl-line {
+    flex: 1;
+    width: 2px;
+    background: var(--orange-mid);
+    margin-top: 2px;
+  }
+
+  .tl-content { padding-top: 0; }
+  .tl-status { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .tl-loc { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
+  .tl-time { font-size: 11px; color: var(--orange); margin-top: 2px; }
+
+  /* SHIPMENT MINI LIST */
+  .mini-ship-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .mini-ship {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    border: 1px solid var(--gray-100);
+  }
+
+  .mini-ship-id { font-family: var(--font-display); font-size: 12px; color: var(--orange); font-weight: 600; }
+  .mini-ship-city { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+  .mini-ship-wt { font-size: 11px; font-weight: 600; color: var(--gray-600); }
+
+  /* MANIFEST DOWNLOAD ROW */
+  .manifest-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--orange-pale);
+    border: 1px solid var(--orange-mid);
+    border-radius: var(--radius);
+    margin-top: 14px;
+  }
+
+  .manifest-icon { width: 32px; height: 32px; background: var(--orange); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
+  .manifest-info .mt { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .manifest-info .ms { font-size: 11px; color: var(--gray-400); }
+  .manifest-dl { margin-left: auto; padding: 5px 12px; background: var(--orange); color: white; border: none; border-radius: 7px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: var(--font-body); }
+
+  /* STATUS UPDATE */
+  .status-update-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .status-select {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--gray-800);
+    outline: none;
+  }
+
+  .status-select:focus { border-color: var(--orange); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--gray-400);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 14px; color: var(--gray-200); }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--gray-600); margin-bottom: 5px; }
+  .empty-sub { font-size: 13px; color: var(--gray-400); }
+
+  /* NOTIFICATION TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--gray-800);
+    color: white;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success i { color: #4caf50; }
+  .toast.warning i { color: var(--orange-light); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 10px; }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .page-info { font-size: 12px; color: var(--gray-400); }
+
+  .page-btns { display: flex; gap: 4px; }
+
+  .page-btn {
+    width: 30px; height: 30px;
+    border-radius: 7px;
+    border: 1px solid var(--gray-200);
+    background: transparent;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-600);
+    transition: all 0.1s;
+    font-family: var(--font-body);
+  }
+
+  .page-btn:hover { background: var(--gray-50); color: var(--gray-800); }
+  .page-btn.active { background: var(--orange); border-color: var(--orange); color: white; }
+
+  /* SCAN BUTTON PULSE */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,107,0,0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(255,107,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,107,0,0); }
+  }
+
+  .btn-scan { animation: pulse 2s infinite; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-truck-fast"></i></div>
+    <div>
+      <div class="logo-text">SmartCargo</div>
+      <div class="logo-sub">Logistics OS</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <a class="nav-item" href="#">
+      <i class="fas fa-chart-pie"></i> Dashboard
+    </a>
+
+    <div class="nav-section-label" style="margin-top:8px;">Operations</div>
+    <a class="nav-item" href="#">
+      <i class="fas fa-box"></i> Shipments
+      <span class="nav-badge">23</span>
+    </a>
+    <a class="nav-item active" href="#">
+      <i class="fas fa-truck-ramp-box"></i> Consignments
+      <span class="nav-badge">7</span>
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-route"></i> Routes
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-location-dot"></i> Live Tracking
+    </a>
+
+    <div class="nav-section-label" style="margin-top:8px;">Fleet & Staff</div>
+    <a class="nav-item" href="#">
+      <i class="fas fa-warehouse"></i> Hubs
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-car-side"></i> Vehicles
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-id-badge"></i> Drivers
+    </a>
+
+    <div class="nav-section-label" style="margin-top:8px;">System</div>
+    <a class="nav-item" href="#">
+      <i class="fas fa-users"></i> Users
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-bell"></i> Notifications
+      <span class="nav-badge">3</span>
+    </a>
+    <a class="nav-item" href="#">
+      <i class="fas fa-gear"></i> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="avatar">KP</div>
+      <div class="user-info">
+        <div class="name">Kasun Perera</div>
+        <div class="role">Dispatcher · Negombo</div>
+      </div>
+      <i class="fas fa-chevron-right" style="margin-left:auto;font-size:10px;color:var(--gray-400);"></i>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN
+═══════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="breadcrumb">
+        <span>Operations</span>
+        <i class="fas fa-chevron-right"></i>
+        <span class="active">Consignments</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-scan" onclick="showToast('QR Scanner activated!','warning')">
+        <i class="fas fa-qrcode"></i> Bulk QR Scan
+      </button>
+      <button class="btn btn-primary" onclick="openModal()">
+        <i class="fas fa-plus"></i> New Consignment
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="content">
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Consignment Management</div>
+        <div class="page-sub">Batch parcels, assign vehicles & manage inter-hub shipments</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-ghost" onclick="showToast('Report exported!','success')">
+          <i class="fas fa-file-export"></i> Export
+        </button>
+        <button class="btn btn-ghost" onclick="showToast('Data refreshed','success')">
+          <i class="fas fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-grid">
+      <div class="stat-card orange">
+        <div class="stat-icon"><i class="fas fa-truck-fast"></i></div>
+        <div class="stat-value">7</div>
+        <div class="stat-label">Active Consignments</div>
+        <div class="stat-delta up"><i class="fas fa-arrow-up"></i> 2 today</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div class="stat-value">142</div>
+        <div class="stat-label">Delivered This Month</div>
+        <div class="stat-delta up"><i class="fas fa-arrow-up"></i> 98%</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+        <div class="stat-value">318</div>
+        <div class="stat-label">Parcels In Transit</div>
+        <div class="stat-delta neutral"><i class="fas fa-minus"></i> Stable</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-value">4</div>
+        <div class="stat-label">Pending Dispatch</div>
+        <div class="stat-delta neutral"><i class="fas fa-triangle-exclamation"></i> Needs action</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-bar">
+      <div class="tab active" onclick="switchTab(0,this)">
+        <i class="fas fa-circle-play" style="font-size:11px;color:var(--orange);"></i>
+        Active
+        <span class="tab-count">7</span>
+      </div>
+      <div class="tab" onclick="switchTab(1,this)">
+        <i class="fas fa-hourglass-half" style="font-size:11px;"></i>
+        Pending Dispatch
+        <span class="tab-count">4</span>
+      </div>
+      <div class="tab" onclick="switchTab(2,this)">
+        <i class="fas fa-clock-rotate-left" style="font-size:11px;"></i>
+        History
+        <span class="tab-count">142</span>
+      </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <span class="filter-label"><i class="fas fa-filter" style="margin-right:4px;"></i>Filters</span>
+      <div class="filter-group">
+        <select class="filter-select" onchange="filterTable()">
+          <option value="">All Origins</option>
+          <option>Negombo Hub</option>
+          <option>Colombo Hub</option>
+          <option>Kandy Hub</option>
+          <option>Galle Hub</option>
+        </select>
+        <i class="fas fa-arrow-right" style="color:var(--gray-300);font-size:11px;"></i>
+        <select class="filter-select" onchange="filterTable()">
+          <option value="">All Destinations</option>
+          <option>Colombo Hub</option>
+          <option>Kandy Hub</option>
+          <option>Galle Hub</option>
+          <option>Matara Hub</option>
+        </select>
+      </div>
+      <select class="filter-select" onchange="filterTable()">
+        <option value="">All Vehicle Types</option>
+        <option>🚛 Truck</option>
+        <option>🚐 Van</option>
+        <option>🏍️ Bike</option>
+      </select>
+      <input type="date" class="filter-select" style="color:var(--gray-600);">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search consignment ID..." oninput="filterTable()">
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap" id="tableWrap">
+      <div class="table-header">
+        <div class="table-title">
+          <i class="fas fa-truck-ramp-box" style="color:var(--orange);"></i>
+          Consignment List
+          <span class="table-count" id="rowCount">7 records</span>
+        </div>
+        <div class="table-actions">
+          <button class="btn-icon" title="Print list" onclick="showToast('Printing...','success')"><i class="fas fa-print"></i></button>
+          <button class="btn-icon" title="Column settings"><i class="fas fa-sliders"></i></button>
+        </div>
+      </div>
+
+      <table id="mainTable">
+        <thead>
+          <tr>
+            <th>Consignment ID</th>
+            <th>Vehicle</th>
+            <th>Route</th>
+            <th>Driver</th>
+            <th>Shipments</th>
+            <th>Load / Capacity</th>
+            <th>Departure</th>
+            <th>ETA</th>
+            <th>Status</th>
+            <th style="text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Rows injected by JS -->
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div class="page-info">Showing 1–7 of 7 records</div>
+        <div class="page-btns">
+          <button class="page-btn"><i class="fas fa-chevron-left" style="font-size:10px;"></i></button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn"><i class="fas fa-chevron-right" style="font-size:10px;"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ═══════════════════════════════════════════════════
+     NEW CONSIGNMENT MODAL
+═══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="newModal" onclick="closeOnBg(event,'newModal')">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title"><i class="fas fa-plus-circle" style="color:var(--orange);margin-right:8px;"></i>Create New Consignment</div>
+        <div class="modal-sub">Batch parcels and assign vehicle for inter-hub transport</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ROUTE SECTION -->
+      <div class="form-section">
+        <div class="form-section-title">Route & Schedule</div>
+        <div class="form-grid three">
+          <div class="form-group">
+            <label class="form-label">Origin Hub</label>
+            <select class="form-control" onchange="loadShipments()">
+              <option>Negombo Sorting Center</option>
+              <option>Colombo Main Hub</option>
+              <option>Kandy Hub</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Destination Hub</label>
+            <select class="form-control" onchange="loadShipments()">
+              <option>Colombo Main Hub</option>
+              <option>Kandy Hub</option>
+              <option>Galle Hub</option>
+              <option>Matara Hub</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Departure Time</label>
+            <input type="datetime-local" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <!-- VEHICLE SECTION -->
+      <div class="form-section">
+        <div class="form-section-title">Vehicle & Driver</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Vehicle</label>
+            <select class="form-control" id="vehicleSelect" onchange="updateCapacity()">
+              <option value="5000" data-type="Truck">WP-6543 — Truck (5,000 kg)</option>
+              <option value="2000" data-type="Truck">CP-8821 — Truck (2,000 kg)</option>
+              <option value="800" data-type="Van">NP-3341 — Van (800 kg)</option>
+              <option value="600" data-type="Van">SP-1129 — Van (600 kg)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign Driver</label>
+            <select class="form-control">
+              <option>Nimal Silva · ACTIVE</option>
+              <option>Ruwan Fernando · ACTIVE</option>
+              <option disabled>Ashan Gamage · ON_TRIP</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid three" style="margin-top:14px;">
+          <div class="form-group">
+            <label class="form-label">Vehicle Type</label>
+            <input class="form-control" id="vTypeDisplay" value="Truck" readonly style="background:var(--gray-100);color:var(--gray-600);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Capacity</label>
+            <input class="form-control" id="capDisplay" value="5,000 kg" readonly style="background:var(--gray-100);color:var(--gray-600);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estimated Arrival</label>
+            <input type="datetime-local" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <!-- SHIPMENT BATCHING -->
+      <div class="form-section">
+        <div class="form-section-title">Add Parcels to Batch</div>
+        <div class="shipment-selector">
+          <div class="selector-head">
+            <span style="font-size:12px;color:var(--gray-600);font-weight:500;">Available Shipments → Colombo Main Hub</span>
+            <span id="selCount" style="font-size:12px;color:var(--orange);font-weight:600;">0 selected</span>
+          </div>
+          <div class="selector-list" id="shipmentList">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- WEIGHT INDICATOR -->
+        <div class="weight-indicator" id="weightIndicator">
+          <div>
+            <div class="wi-label">Total Selected Weight</div>
+            <div class="wi-bar" style="width:180px;margin-top:6px;"><div class="wi-fill" id="wiFill" style="width:0%"></div></div>
+          </div>
+          <div style="text-align:right;">
+            <div class="wi-value" id="wiValue">0 kg</div>
+            <div class="wi-limit" id="wiLimit">of 5,000 kg capacity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="form-section">
+        <div class="form-section-title">Additional Info</div>
+        <div class="form-group">
+          <label class="form-label">Dispatcher Notes (Optional)</label>
+          <textarea class="form-control" rows="2" placeholder="Special handling instructions, priority notes..."></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <div class="modal-foot-note"><i class="fas fa-info-circle" style="color:var(--orange);margin-right:4px;"></i>Weight check runs automatically before dispatch.</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="createConsignment()">
+          <i class="fas fa-check"></i> Create Consignment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     DETAIL SIDE PANEL
+═══════════════════════════════════════════════════ -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeOnBg(event,'detailOverlay')">
+  <div class="detail-panel">
+    <div class="detail-head">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="detail-id" id="dId">CON-1001</div>
+        <button class="modal-close" onclick="closeDetail()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="dBadge"></div>
+    </div>
+
+    <div class="detail-body">
+
+      <div class="detail-section">
+        <div class="detail-section-title">Route Information</div>
+        <div class="detail-row">
+          <span class="detail-key">Origin</span>
+          <span class="detail-val" id="dOrigin">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Destination</span>
+          <span class="detail-val" id="dDest">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Vehicle</span>
+          <span class="detail-val" id="dVehicle">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Driver</span>
+          <span class="detail-val" id="dDriver">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Departure</span>
+          <span class="detail-val" id="dDep">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">ETA</span>
+          <span class="detail-val" id="dEta">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Total Weight</span>
+          <span class="detail-val" id="dWeight">—</span>
+        </div>
+      </div>
+
+      <!-- STATUS UPDATE -->
+      <div class="detail-section">
+        <div class="detail-section-title">Update Status</div>
+        <div class="status-update-row">
+          <select class="status-select" id="statusUpdateSelect">
+            <option>PREPARING</option>
+            <option>DISPATCHED</option>
+            <option selected>IN_TRANSIT</option>
+            <option>ARRIVED AT DESTINATION</option>
+            <option>COMPLETED</option>
+          </select>
+          <button class="btn btn-primary" style="white-space:nowrap;" onclick="showToast('Status updated!','success')">
+            <i class="fas fa-check"></i> Update
+          </button>
+        </div>
+      </div>
+
+      <!-- TRACKING TIMELINE -->
+      <div class="detail-section">
+        <div class="detail-section-title">Tracking History</div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot-wrap">
+              <div class="tl-dot filled"></div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-status">In Transit</div>
+              <div class="tl-loc">Negombo Expressway Checkpoint</div>
+              <div class="tl-time">Today 09:45 AM</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot-wrap">
+              <div class="tl-dot filled"></div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-status">Dispatched</div>
+              <div class="tl-loc">Negombo Sorting Center</div>
+              <div class="tl-time">Today 08:00 AM</div>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot-wrap">
+              <div class="tl-dot filled"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-status">Batch Created</div>
+              <div class="tl-loc">Negombo Sorting Center</div>
+              <div class="tl-time">Yesterday 11:30 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHIPMENTS IN THIS CONSIGNMENT -->
+      <div class="detail-section">
+        <div class="detail-section-title">Parcels in this Consignment <span id="dShipCount" style="color:var(--orange);"></span></div>
+        <div class="mini-ship-list" id="dShipList"></div>
+      </div>
+
+      <!-- MANIFEST DOWNLOAD -->
+      <div class="manifest-row">
+        <div class="manifest-icon"><i class="fas fa-file-pdf"></i></div>
+        <div class="manifest-info">
+          <div class="mt">Consignment Note / Manifest</div>
+          <div class="ms">Contains all parcel IDs, weights and route info</div>
+        </div>
+        <button class="manifest-dl" onclick="showToast('Manifest PDF downloading...','success')">
+          <i class="fas fa-download"></i> PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i class="fas fa-circle-check"></i>
+  <span id="toastMsg">Action completed</span>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────
+const consignments = [
+  {
+    id:'CON-1001', vehicle:'WP-6543', vtype:'Truck',
+    origin:'Negombo', dest:'Colombo',
+    driver:'Nimal Silva',
+    shipments:45, weight:3200, capacity:5000,
+    departure:'2026-05-09 08:00', eta:'2026-05-09 11:30',
+    status:'IN_TRANSIT',
+    parcels:[
+      {id:'TRK-00821', city:'Colombo 03', wt:12.5},
+      {id:'TRK-00822', city:'Colombo 07', wt:8.0},
+      {id:'TRK-00823', city:'Maradana', wt:22.3},
+      {id:'TRK-00824', city:'Colombo 10', wt:5.5},
+      {id:'TRK-00825', city:'Peliyagoda', wt:18.0},
+    ]
+  },
+  {
+    id:'CON-1002', vehicle:'CP-8821', vtype:'Truck',
+    origin:'Colombo', dest:'Kandy',
+    driver:'Ruwan Fernando',
+    shipments:12, weight:720, capacity:2000,
+    departure:'2026-05-09 06:30', eta:'2026-05-09 10:00',
+    status:'PREPARING',
+    parcels:[
+      {id:'TRK-00901', city:'Kandy City', wt:30.0},
+      {id:'TRK-00902', city:'Peradeniya', wt:15.5},
+      {id:'TRK-00903', city:'Katugastota', wt:44.2},
+    ]
+  },
+  {
+    id:'CON-1003', vehicle:'NP-3341', vtype:'Van',
+    origin:'Kandy', dest:'Matale',
+    driver:'Asanka Dias',
+    shipments:8, weight:180, capacity:800,
+    departure:'2026-05-09 10:00', eta:'2026-05-09 11:15',
+    status:'DISPATCHED',
+    parcels:[
+      {id:'TRK-01001', city:'Matale', wt:22.0},
+      {id:'TRK-01002', city:'Dambulla', wt:35.0},
+    ]
+  },
+  {
+    id:'CON-1004', vehicle:'SP-1129', vtype:'Van',
+    origin:'Galle', dest:'Matara',
+    driver:'Pradeep Kumara',
+    shipments:20, weight:550, capacity:600,
+    departure:'2026-05-09 07:00', eta:'2026-05-09 08:30',
+    status:'ARRIVED AT DESTINATION',
+    parcels:[
+      {id:'TRK-01101', city:'Matara', wt:80.0},
+      {id:'TRK-01102', city:'Weligama', wt:45.0},
+    ]
+  },
+  {
+    id:'CON-1005', vehicle:'WP-6543', vtype:'Truck',
+    origin:'Colombo', dest:'Galle',
+    driver:'Nimal Silva',
+    shipments:30, weight:1800, capacity:5000,
+    departure:'2026-05-09 13:00', eta:'2026-05-09 16:30',
+    status:'PREPARING',
+    parcels:[
+      {id:'TRK-01201', city:'Galle', wt:120.0},
+      {id:'TRK-01202', city:'Hikkaduwa', wt:55.0},
+    ]
+  },
+  {
+    id:'CON-1006', vehicle:'CP-8821', vtype:'Truck',
+    origin:'Negombo', dest:'Kurunegala',
+    driver:'Ruwan Fernando',
+    shipments:18, weight:900, capacity:2000,
+    departure:'2026-05-09 09:00', eta:'2026-05-09 11:00',
+    status:'IN_TRANSIT',
+    parcels:[
+      {id:'TRK-01301', city:'Kurunegala', wt:200.0},
+      {id:'TRK-01302', city:'Polgahawela', wt:88.0},
+    ]
+  },
+  {
+    id:'CON-1007', vehicle:'NP-3341', vtype:'Van',
+    origin:'Kandy', dest:'Nuwara Eliya',
+    driver:'Asanka Dias',
+    shipments:6, weight:95, capacity:800,
+    departure:'2026-05-09 12:00', eta:'2026-05-09 14:00',
+    status:'PREPARING',
+    parcels:[
+      {id:'TRK-01401', city:'Nuwara Eliya', wt:45.0},
+      {id:'TRK-01402', city:'Hatton', wt:30.0},
+    ]
+  }
+];
+
+// Available parcels for batching
+const availableShipments = [
+  {id:'TRK-02001', dest:'Colombo 03', wt:14.5},
+  {id:'TRK-02002', dest:'Colombo 10', wt:8.0},
+  {id:'TRK-02003', dest:'Maradana', wt:22.3},
+  {id:'TRK-02004', dest:'Peliyagoda', wt:5.5},
+  {id:'TRK-02005', dest:'Wellampitiya', wt:18.0},
+  {id:'TRK-02006', dest:'Colombo 07', wt:11.0},
+  {id:'TRK-02007', dest:'Rajagiriya', wt:9.2},
+  {id:'TRK-02008', dest:'Kotte', wt:33.0},
+];
+
+let selectedShipments = new Set();
+let vehicleCapacity = 5000;
+
+// ─── STATUS BADGE ─────────────────────────────────────
+function statusBadge(s) {
+  const map = {
+    'IN_TRANSIT': ['badge-transit','fa-truck','In Transit'],
+    'PREPARING': ['badge-preparing','fa-hourglass-half','Preparing'],
+    'DISPATCHED': ['badge-dispatched','fa-truck-fast','Dispatched'],
+    'ARRIVED AT DESTINATION': ['badge-arrived','fa-circle-check','Arrived'],
+    'COMPLETED': ['badge-arrived','fa-flag-checkered','Completed'],
+  };
+  const [cls, icon, label] = map[s] || ['badge-preparing','fa-circle','Unknown'];
+  return `<span class="badge ${cls}"><i class="fas ${icon}"></i> ${label}</span>`;
+}
+
+// ─── RENDER TABLE ────────────────────────────────────
+function renderTable(data) {
+  const tb = document.getElementById('tableBody');
+  if(!data || data.length===0) {
+    tb.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+      <div class="empty-icon"><i class="fas fa-truck-ramp-box"></i></div>
+      <div class="empty-title">No consignments found</div>
+      <div class="empty-sub">Try adjusting your filters or create a new consignment.</div>
+    </div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = data.map(c => {
+    const pct = Math.round((c.weight/c.capacity)*100);
+    const fillClass = pct > 90 ? 'danger' : pct > 70 ? 'warn' : '';
+    return `<tr>
+      <td><span class="con-id">#${c.id}</span></td>
+      <td>
+        <div class="vehicle-chip"><i class="fas fa-${c.vtype==='Truck'?'truck':'van-shuttle'}" style="font-size:11px;color:var(--orange);"></i>${c.vehicle}</div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:3px;">${c.vtype}</div>
+      </td>
+      <td>
+        <div class="route-cell">
+          <span>${c.origin}</span>
+          <i class="fas fa-arrow-right route-arrow"></i>
+          <span>${c.dest}</span>
+        </div>
+      </td>
+      <td>
+        <div style="font-size:13px;font-weight:500;">${c.driver}</div>
+      </td>
+      <td><span class="shipment-count"><i class="fas fa-box" style="font-size:10px;"></i> ${c.shipments} items</span></td>
+      <td>
+        <div class="weight-bar-wrap">
+          <div class="weight-bar"><div class="weight-fill ${fillClass}" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;color:var(--gray-600);font-weight:500;">${c.weight} kg</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray-400);margin-top:2px;">${pct}% of ${c.capacity}kg</div>
+      </td>
+      <td style="font-size:12px;color:var(--gray-600);">${c.departure.split(' ')[1]}<br><span style="color:var(--gray-400);font-size:10px;">${c.departure.split(' ')[0]}</span></td>
+      <td style="font-size:12px;color:var(--gray-600);">${c.eta.split(' ')[1]}<br><span style="color:var(--gray-400);font-size:10px;">${c.eta.split(' ')[0]}</span></td>
+      <td>${statusBadge(c.status)}</td>
+      <td>
+        <div class="action-cell">
+          <button class="action-btn primary" onclick="openDetail('${c.id}')">
+            <i class="fas fa-eye"></i> View
+          </button>
+          <button class="action-btn" onclick="showToast('Opening edit form...','warning')">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="action-btn" onclick="showToast('Manifest downloading...','success')">
+            <i class="fas fa-file-pdf"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rowCount').textContent = data.length + ' records';
+}
+
+// ─── TABS ─────────────────────────────────────────────
+function switchTab(idx, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const filtered = idx===0
+    ? consignments.filter(c=>['IN_TRANSIT','DISPATCHED'].includes(c.status))
+    : idx===1
+    ? consignments.filter(c=>c.status==='PREPARING')
+    : consignments.filter(c=>c.status==='ARRIVED AT DESTINATION'||c.status==='COMPLETED');
+  renderTable(filtered);
+}
+
+function filterTable() { renderTable(consignments); }
+
+// ─── MODAL ────────────────────────────────────────────
+function openModal() {
+  document.getElementById('newModal').classList.add('open');
+  renderShipmentList();
+}
+function closeModal() { document.getElementById('newModal').classList.remove('open'); }
+function closeOnBg(e, id) { if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+function renderShipmentList() {
+  const list = document.getElementById('shipmentList');
+  list.innerHTML = availableShipments.map(s => `
+    <div class="shipment-row${selectedShipments.has(s.id)?' selected':''}" onclick="toggleShipment('${s.id}')">
+      <div class="ship-check"><i class="fas fa-check"></i></div>
+      <div class="ship-id">${s.id}</div>
+      <div class="ship-dest"><i class="fas fa-location-dot" style="font-size:10px;color:var(--gray-400);margin-right:4px;"></i>${s.dest}</div>
+      <div class="ship-wt">${s.wt} kg</div>
+    </div>
+  `).join('');
+}
+
+function toggleShipment(id) {
+  if(selectedShipments.has(id)) selectedShipments.delete(id);
+  else selectedShipments.add(id);
+  renderShipmentList();
+  updateWeightIndicator();
+}
+
+function updateWeightIndicator() {
+  const total = availableShipments
+    .filter(s=>selectedShipments.has(s.id))
+    .reduce((sum,s)=>sum+s.wt,0);
+  const pct = Math.min((total/vehicleCapacity)*100,100);
+  document.getElementById('wiValue').textContent = total.toFixed(1) + ' kg';
+  document.getElementById('wiFill').style.width = pct + '%';
+  document.getElementById('selCount').textContent = selectedShipments.size + ' selected';
+
+  if(total > vehicleCapacity) {
+    document.getElementById('wiValue').style.color = 'var(--red)';
+    document.getElementById('wiFill').style.background = 'var(--red)';
+    document.getElementById('weightIndicator').style.background = 'var(--red-pale)';
+    document.getElementById('weightIndicator').style.borderColor = 'var(--red)';
+  } else {
+    document.getElementById('wiValue').style.color = 'var(--orange)';
+    document.getElementById('wiFill').style.background = 'var(--orange)';
+    document.getElementById('weightIndicator').style.background = 'var(--orange-pale)';
+    document.getElementById('weightIndicator').style.borderColor = 'var(--orange-mid)';
+  }
+}
+
+function loadShipments() { renderShipmentList(); }
+
+function updateCapacity() {
+  const sel = document.getElementById('vehicleSelect');
+  const opt = sel.selectedOptions[0];
+  vehicleCapacity = parseInt(sel.value);
+  document.getElementById('capDisplay').value = parseInt(sel.value).toLocaleString() + ' kg';
+  const type = opt.text.includes('Truck') ? 'Truck' : opt.text.includes('Van') ? 'Van' : 'Bike';
+  document.getElementById('vTypeDisplay').value = type;
+  updateWeightIndicator();
+  document.getElementById('wiLimit').textContent = 'of ' + parseInt(sel.value).toLocaleString() + ' kg capacity';
+}
+
+function createConsignment() {
+  const total = availableShipments.filter(s=>selectedShipments.has(s.id)).reduce((sum,s)=>sum+s.wt,0);
+  if(total > vehicleCapacity) {
+    showToast('Weight exceeds vehicle capacity!','warning');
+    return;
+  }
+  if(selectedShipments.size===0) {
+    showToast('Please select at least one parcel','warning');
+    return;
+  }
+  closeModal();
+  showToast('CON-1008 created successfully!','success');
+}
+
+// ─── DETAIL PANEL ─────────────────────────────────────
+function openDetail(id) {
+  const c = consignments.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById('dId').textContent = '#' + c.id;
+  document.getElementById('dBadge').innerHTML = statusBadge(c.status);
+  document.getElementById('dOrigin').textContent = c.origin + ' Hub';
+  document.getElementById('dDest').textContent = c.dest + ' Hub';
+  document.getElementById('dVehicle').textContent = c.vehicle + ' (' + c.vtype + ')';
+  document.getElementById('dDriver').textContent = c.driver;
+  document.getElementById('dDep').textContent = c.departure;
+  document.getElementById('dEta').textContent = c.eta;
+  document.getElementById('dWeight').textContent = c.weight + ' kg / ' + c.capacity + ' kg';
+  document.getElementById('dShipCount').textContent = '(' + c.parcels.length + ' shown)';
+  document.getElementById('dShipList').innerHTML = c.parcels.map(p=>`
+    <div class="mini-ship">
+      <div>
+        <div class="mini-ship-id">${p.id}</div>
+        <div class="mini-ship-city">${p.city}</div>
+      </div>
+      <div class="mini-ship-wt">${p.wt} kg</div>
+    </div>
+  `).join('');
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); }
+
+// ─── TOAST ────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const icon = t.querySelector('i');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  icon.className = 'fas ' + (type==='success' ? 'fa-circle-check' : 'fa-triangle-exclamation');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ─── INIT ────────────────────────────────────────────
+renderTable(consignments);
+renderShipmentList();
+</script>
+</body>
+</html>

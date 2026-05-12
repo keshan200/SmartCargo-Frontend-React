@@ -6,9 +6,13 @@ export interface AuthContextType {
   isLoggedIn: boolean;
   isAuthenticating: boolean;
   user: IUser | null; 
-  login: (accessToken: string, user: IUser) => void;
+  login: (accessToken: string) => void;
   logout: () => void;
   setUser: (user: IUser | null) => void;
 }
+
+
+
+
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

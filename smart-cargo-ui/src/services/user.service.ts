@@ -22,15 +22,8 @@ export const signup = async (userData: UserFormData): Promise<IUser> => {
 export const login = async (credentials: UserLoginCredentials): Promise<{ accessToken: string; user: IUser }> => {
   const response = await apiClient.post(`${AUTH_URL}/login`, credentials);
   
-  if (response.data.accessToken) {
-  
-    Cookies.set('userToken', response.data.accessToken, { 
-      expires: 1, 
-      secure: true, // HTTPS වලදී පමණක් වැඩ කරයි (Production වලදී අනිවාර්යයි)
-      sameSite: 'strict', // CSRF ප්‍රහාර වලින් ආරක්ෂා වීමට
-      path: '/' // මුළු ඇප් එකටම access ලැබීමට
-    });
-  }
-  console.log("Login  cookie." ,response.data);
+  console.log(" backend Login  res." ,response.data);
   return response.data;
 };
+
+

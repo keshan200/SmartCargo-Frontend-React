@@ -33,6 +33,14 @@ const TrackingIcon = () => (
   </svg>
 );
 
+const ConsignmentIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10" />
+    <path d="M23 7H1l2-4h18l2 4z" />
+    <line x1="12" y1="22" x2="12" y2="7" />
+  </svg>
+);
+
 // Fleet icon — Truck
 const FleetIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -85,7 +93,8 @@ const FileTextIcon = () => (
 const mainMenuItems: NavItem[] = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard /> ,path:"/dashboard"},
   { id: "shipments", label: "Shipments", icon: <PackageIcon />, badge: 48 ,path:"/shipments"},
-  { id: "tracking", label: "Live Tracking", icon: <TrackingIcon />, path:"/tracking"},
+  { id: "consigments", label: "consigments", icon: <TrackingIcon />, path:"/consigments"},
+  { id: "tracking", label: "Live Tracking", icon: <ConsignmentIcon />, path:"/tracking"},
   { id: "vehicle", label: "Vehicle", icon: <FleetIcon />, path:"/vehicle"},
   { id: "hubs", label: " Hubs", icon: <HubsIcon />, path:"/hubs"},
   { id: "users", label: "Users", icon: <UsersIcon />, path:"/users"},
@@ -143,7 +152,7 @@ const Sidebar = () => {
   return (
     <div
       style={{ fontFamily: "'Poppins', sans-serif" }}
-      className="sidebar-panel flex h-screen w-72 flex-col bg-white border-r border-gray-100 shadow-sm"
+      className="sidebar-panel flex h-screen w-62 flex-col bg-white border-r border-gray-100 shadow-sm"
     >
       <style>{`
         .sidebar-panel nav::-webkit-scrollbar {

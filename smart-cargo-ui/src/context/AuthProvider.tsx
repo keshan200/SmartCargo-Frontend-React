@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react"
 
-
-import { AuthContext } from "./AuthContext"
-
-import apiClient, { setHeader } from "./apiClient"
-import type { IUser } from "../types/User"
 import router from "../router"
+import { AuthContext } from "./AuthContext"
+import type { IUser } from "../types/User"
+import apiClient, { setHeader } from "./apiClient"
 
 
 
@@ -23,11 +21,10 @@ export const AuthProvider  = ({children}:AuthProviderProps) => {
    const [user, setUser] = useState<IUser | null>(null)
    
 
-  const login = (token: string, userData: IUser) => { 
-  setIsLoggedIn(true);
-  setAccessToken(token);
-  setUser(userData); 
- };
+   const login  =  (token:string) => {
+    setIsLoggedIn(true)
+    setAccessToken(token)
+   }
    
    const logout =  () => setIsLoggedIn(false)
 

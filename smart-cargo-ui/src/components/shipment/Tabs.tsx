@@ -7,6 +7,7 @@ import { ShipmentDetailModal, MapModal } from "./Modals";
 import { Success, RightPanel } from "./Rightpanel";
 import { Icon, Label, StatusBadge } from "./Ui";
 import { createShipment, allshipments } from "../../services/shipment.service";
+import { getAllHubs } from "../../services/hub.service";
 import { useSenderGeocode } from "./Utils";
 
 
@@ -39,7 +40,6 @@ function getUserIdFromRefreshToken(): string {
 
 // ─── Default blank form ───────────────────────────────────────────────────────
 const blankForm = (createdBy: string): ShipmentForm => ({
- 
   sender_name: "", sender_email: "", sender_phone: "",
   sender_address: "", sender_city: "", sender_postal_code: "",
 
@@ -58,7 +58,15 @@ export const NewShipmentTab = () => {
   const [submitted, setSubmitted]   = useState(false);
   const [trackingId, setTrackingId] = useState("");
   const [errors, setErrors]         = useState<string[]>([]);
-  const [hubs, setHubs]             = useState<Hub[]>([]);
+
+  // ── Hubs loaded ONCE on mount — not inside Step4 ─────────────────────────
+  // This prevents hubCoords from disappearing on refresh or when switching steps.
+  const [hubs, setHubs] = useState<Hub[]>([]);
+  useEffect(() => {
+    getAllHubs()
+      .then(setHubs)
+      .catch(() => {}); // silent — HubSelector will show its own error
+  }, []);
 
   const [userId] = useState(() => getUserIdFromRefreshToken());
   const [form, setForm] = useState<ShipmentForm>(() => blankForm(userId));
@@ -69,7 +77,7 @@ export const NewShipmentTab = () => {
     }
   }, [userId]);
 
-  // ─── Sender geocode → used for map route preview on Step 1 ───────────────
+  // ─── Sender geocode → used for map route preview ──────────────────────────
   const { coords: senderCoords } = useSenderGeocode(
     form.sender_city,
     form.sender_postal_code
@@ -104,6 +112,8 @@ export const NewShipmentTab = () => {
     });
   }, [setBulk]);
 
+  // ── hubCoords derived from the always-loaded hubs array ──────────────────
+  // Because hubs is fetched on mount, this stays valid across all steps & refreshes.
   const selectedHub = hubs.find(h => h._id === form.current_hub_id);
   const hubCoords = selectedHub
     ? { lat: selectedHub.latitude, lng: selectedHub.longitude }
@@ -147,7 +157,6 @@ export const NewShipmentTab = () => {
       const shipment = await createShipment(form);
       setTrackingId(shipment.tracking_id);
       setSubmitted(true);
-
       console.log("Sending Data>>>:", JSON.stringify(shipment, null, 2));
     } catch (err: any) {
       const msg =
@@ -198,7 +207,8 @@ export const NewShipmentTab = () => {
                   f={form}
                   set={set}
                   setBulk={setBulk}
-                  onHubsLoaded={setHubs}
+                  // Pass the already-loaded hubs so Step4 doesn't need to refetch
+                  preloadedHubs={hubs}
                 />
               )}
               {step === 5 && (
@@ -241,7 +251,10 @@ export const NewShipmentTab = () => {
           form={form}
           onMapClick={handleMapClick}
           onGPS={handleGPS}
-          mapKey={`${form.delivery_lat},${form.delivery_lng}`}
+          // mapKey keyed only to hub — NOT delivery coords.
+          // Delivery coord changes are handled inside CargoMap via MapUpdater (flyTo),
+          // so we don't need to remount the whole map, which was wiping the hub marker.
+          mapKey={form.current_hub_id || "no-hub"}
           hubCoords={hubCoords}
           senderCoords={senderCoords}
         />
@@ -249,6 +262,7 @@ export const NewShipmentTab = () => {
     </div>
   );
 };
+
 
 // ─── Shipments List Tab ───────────────────────────────────────────────────────
 export const ShipmentsTab = () => {
@@ -279,9 +293,7 @@ export const ShipmentsTab = () => {
       }
     })();
 
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   const filtered = shipments.filter(s => {

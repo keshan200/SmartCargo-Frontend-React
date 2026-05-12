@@ -12,6 +12,8 @@ import VehicleDirectory from "./pages/vehicle";
 import AddUserPagggge from "./pages/AddUserPage";
 import RoleGate from "./components/RoleGate";
 import AccessDenied from "./pages/AccessDenied";
+import ConsignmentPage from "./pages/Consignmentpage";
+import IncomingConsignmentTracker from "./pages/Incomingconsignmentpage";
 
 
 
@@ -45,8 +47,9 @@ const router = createBrowserRouter([
             {path:"/hubs", element: <HubPage />},
             {path:"/shipments", element: <ShipmentPage />},
             {path:"/tracking", element: <TrackingPage />},
+            {path:"/consigments", element: <ConsignmentPage />},
             {path:"/vehicle", element: <VehicleDirectory />},
-            {path:"/users", element: <AddUserPagggge />},
+            {path:"/users", element: <IncomingConsignmentTracker />},
 
 
          

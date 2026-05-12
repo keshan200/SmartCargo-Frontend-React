@@ -17,52 +17,50 @@ const SmartCargoLogin = () => {
   const [focusedField, setFocused]  = useState<Field | null>(null);
   const [remember, setRemember]     = useState(false);
 
-  
   const navigate = useNavigate();
-  const {login:authenticate} =  useAuth()
-
+  const { login: authenticate } = useAuth();
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
+  if (isLoading) return <LoadingScreen />;
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setIsLoading(true);
+      e.preventDefault();
+      setIsLoading(true);
+      const formData = { email, password };
+    try {
 
-  const formData = { email, password };
+       const response = await login(formData);
 
-  try {
-     const response = await login(formData);
+       console.log("Login response: ", response);
 
-      authenticate(response.accessToken, response.user);
-      console.log("Login successful. User data:", response.user);
-      toast.success(`Welcome, ${response.user.email}`);
-      navigate("/dashboard");
-   
-  } catch (error: any) {
-    
-       if(axios.isAxiosError(error)){
-          toast.error(error.message)
-        }else{
-          toast.error("something went wrong")
-        }
+       if (response.user) {
+         localStorage.setItem("user", JSON.stringify(response.user));
+       }
+     
+        setIsLoading(true)
+        authenticate(response.accessToken)
+        
+        navigate("/dashboard")
 
+    } catch (error: any) {
 
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
+      if (axios.isAxiosError(error)) {
+        toast.error(error.message);
+      } else {
+        toast.error("something went wrong");
+      }
+      
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const inputCls = (field: Field) =>
-    `w-full h-[50px] pl-11 text-[14.5px] outline-none rounded-xl border box-border transition-all duration-200
+    `w-full h-[44px] pl-10 text-[13px] outline-none rounded-xl border box-border transition-all duration-200
     ${focusedField === field
       ? "border-[#ff6b1a] shadow-[0_0_0_4px_rgba(255,107,26,0.08)] bg-white"
       : "border-[#e8e8e8] bg-[#fafafa]"}`;
@@ -86,11 +84,9 @@ const SmartCargoLogin = () => {
           ${mounted ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-7"}`}
         style={{ background: "linear-gradient(145deg,#ff6b1a 0%,#ff4500 55%,#e63900 100%)" }}
       >
-        {/* Blobs */}
         <div className="absolute w-[520px] h-[520px] bg-white/[.06] rounded-full -top-[120px] -right-[160px]" />
         <div className="absolute w-[300px] h-[300px] bg-white/[.05] rounded-full bottom-10 -left-20" />
 
-        {/* Brand */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-white/20 border border-white/35 backdrop-blur-sm flex items-center justify-center">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -104,7 +100,6 @@ const SmartCargoLogin = () => {
           </div>
         </div>
 
-        {/* Decorative grid */}
         <div className="absolute z-0 grid grid-cols-4 gap-2 bottom-[130px] right-[52px] opacity-15">
           {Array.from({ length: 16 }).map((_, i) => (
             <div key={i} className="w-8 h-8 bg-white rounded-md"
@@ -112,21 +107,17 @@ const SmartCargoLogin = () => {
           ))}
         </div>
 
-        {/* Hero */}
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm px-4 py-1.5 mb-7">
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             <span className="text-xs font-medium text-white/90 tracking-[0.4px]">Real-time Tracking Active</span>
           </div>
-
           <h1 className="font-['Georgia','Times_New_Roman',serif] text-[54px] text-white leading-[1.1] tracking-tight mb-5 mt-0">
             Logistics,<br/>Reimagined<br/>for 2025.
           </h1>
           <p className="text-[17px] leading-[1.7] font-light text-white/72 max-w-[340px] m-0">
             One platform to track, manage, and optimize your entire cargo operations — from first mile to last delivery.
           </p>
-
-          {/* Stats */}
           <div className="flex mt-11">
             {stats.map((s, i) => (
               <div key={i}
@@ -141,21 +132,24 @@ const SmartCargoLogin = () => {
 
       {/* RIGHT PANEL */}
       <div
-        className={`flex-[0.9] flex items-center justify-center bg-white px-16 py-12
+        className={`flex-[0.9] flex items-center justify-center bg-white px-14 py-10
           transition-all duration-700 ease-out delay-150
           ${mounted ? "opacity-100 translate-x-0" : "opacity-0 translate-x-7"}`}
       >
-        <div className="w-full max-w-[380px]">
+        <div className="w-full max-w-[340px]">
 
           {/* Header */}
-          <div className="mb-9">
-            <div className="text-[18px] font-semibold uppercase tracking-[2px] text-[#ff6b1a] mb-2.5">
+          <div className="mb-7">
+            {/* ↓ 14px → 11px */}
+            <div className="text-[11px] font-semibold uppercase tracking-[2px] text-[#ff6b1a] mb-2">
               Welcome Back
             </div>
-            <h2 className="font-['Georgia',serif] text-[38px] text-[#111] leading-[1.15] tracking-tight m-0">
+            {/* ↓ 38px → 30px */}
+            <h2 className="font-['Georgia',serif] text-[30px] text-[#111] leading-[1.15] tracking-tight m-0">
               Sign in to<br/>your account
             </h2>
-            <p className="text-base text-[#aaa] mt-2.5 leading-relaxed mb-0">
+            {/* ↓ text-sm → text-xs (12px) */}
+            <p className="text-xs text-[#aaa] mt-2 leading-relaxed mb-0">
               Enter your credentials to access the dashboard.
             </p>
           </div>
@@ -163,11 +157,12 @@ const SmartCargoLogin = () => {
           <form onSubmit={handleLogin} className="m-0">
 
             {/* Email */}
-            <div className="mb-4">
-              <label className="block text-[14px] font-semibold text-[#555] mb-2">Email Address</label>
+            <div className="mb-3">
+              {/* ↓ 14px → 12px */}
+              <label className="block text-[12px] font-semibold text-[#555] mb-1.5">Email Address</label>
               <div className="relative">
-                <span className={`absolute top-1/2 -translate-y-1/2 left-[15px] pointer-events-none flex transition-colors duration-200 ${iconColor("email")}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <span className={`absolute top-1/2 -translate-y-1/2 left-[13px] pointer-events-none flex transition-colors duration-200 ${iconColor("email")}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.8"/>
                     <path d="M2 8L12 14L22 8" stroke="currentColor" strokeWidth="1.8"/>
                   </svg>
@@ -181,11 +176,12 @@ const SmartCargoLogin = () => {
             </div>
 
             {/* Password */}
-            <div className="mb-4">
-              <label className="block text-[14px] font-semibold text-[#555] mb-2">Password</label>
+            <div className="mb-3">
+              {/* ↓ 14px → 12px */}
+              <label className="block text-[12px] font-semibold text-[#555] mb-1.5">Password</label>
               <div className="relative">
-                <span className={`absolute top-1/2 -translate-y-1/2 left-[15px] pointer-events-none flex transition-colors duration-200 ${iconColor("password")}`}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <span className={`absolute top-1/2 -translate-y-1/2 left-[13px] pointer-events-none flex transition-colors duration-200 ${iconColor("password")}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                     <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8"/>
                     <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
@@ -194,31 +190,34 @@ const SmartCargoLogin = () => {
                   value={password} onChange={e => setPassword(e.target.value)}
                   onFocus={() => setFocused("password")}
                   onBlur={() => setFocused(null)}
-                  required className={`${inputCls("password")} pr-11`} />
+                  required className={`${inputCls("password")} pr-10`} />
                 <button type="button" onClick={() => setShowPass(v => !v)}
-                  className="absolute top-1/2 -translate-y-1/2 right-[14px] text-[#bbb] bg-transparent border-none cursor-pointer p-1 flex">
+                  className="absolute top-1/2 -translate-y-1/2 right-[12px] text-[#bbb] bg-transparent border-none cursor-pointer p-1 flex">
                   {showPassword
-                    ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                    : <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/></svg>
+                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                    : <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8"/></svg>
                   }
                 </button>
               </div>
             </div>
 
             {/* Remember / Forgot */}
-            <div className="flex items-center justify-between mb-7 mt-1">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-[15px] text-[#888]">
+            <div className="flex items-center justify-between mb-5 mt-1">
+              {/* ↓ 15px → 12px */}
+              <label className="flex items-center gap-2 cursor-pointer select-none text-[12px] text-[#888]">
                 <input type="checkbox" checked={remember}
                   onChange={e => setRemember(e.target.checked)}
-                  className="w-4 h-4 cursor-pointer accent-[#ff6b1a]" />
+                  className="w-3.5 h-3.5 cursor-pointer accent-[#ff6b1a]" />
                 Remember me
               </label>
-              <a href="#" className="text-[15px] font-semibold text-[#ff6b1a] no-underline">Forgot password?</a>
+              {/* ↓ 15px → 12px */}
+              <a href="#" className="text-[12px] font-semibold text-[#ff6b1a] no-underline">Forgot password?</a>
             </div>
 
             {/* Submit */}
+            {/* ↓ text-[16px] → text-[14px], h-[52px] → h-[46px] */}
             <button type="submit" disabled={isLoading}
-              className={`relative w-full h-[52px] text-[16px] font-bold text-white rounded-[13px] border-none
+              className={`relative w-full h-[46px] text-[14px] font-bold text-white rounded-[13px] border-none
                 flex items-center justify-center gap-2 overflow-hidden transition-all duration-[180ms]
                 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(255,107,26,.42)]
                 ${isLoading ? "opacity-80 cursor-not-allowed" : "cursor-pointer"}`}
@@ -228,13 +227,13 @@ const SmartCargoLogin = () => {
               <span className="relative z-10 flex items-center gap-2">
                 {isLoading ? (
                   <>
-                    <div className="w-[18px] h-[18px] border-[2.5px] border-white/35 border-t-white rounded-full animate-spin" />
+                    <div className="w-[16px] h-[16px] border-[2.5px] border-white/35 border-t-white rounded-full animate-spin" />
                     Signing in...
                   </>
                 ) : (
                   <>
                     Sign In
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </>
@@ -244,19 +243,20 @@ const SmartCargoLogin = () => {
           </form>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
+          <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-[#f0f0f0]" />
-            <span className="text-[11px] text-[#ccc] font-medium tracking-[1px]">OR</span>
+            <span className="text-[10px] text-[#ccc] font-medium tracking-[1px]">OR</span>
             <div className="flex-1 h-px bg-[#f0f0f0]" />
           </div>
 
           {/* SSO */}
-          <button className="w-full h-12 text-base font-semibold text-[#555] rounded-xl
+          {/* ↓ text-base → text-[13px], h-12 → h-[42px] */}
+          <button className="w-full h-[42px] text-[13px] font-semibold text-[#555] rounded-xl
             border-[1.5px] border-[#e8e8e8] bg-white cursor-pointer
             flex items-center justify-center gap-2
             hover:border-[#ff6b1a] hover:bg-[#fffaf7]
             transition-[border-color,background] duration-200">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
               <rect x="3"  y="3"  width="8" height="8" rx="1.5" fill="#ff6b1a"/>
               <rect x="13" y="3"  width="8" height="8" rx="1.5" fill="#ff6b1a" opacity=".5"/>
               <rect x="3"  y="13" width="8" height="8" rx="1.5" fill="#ff6b1a" opacity=".5"/>
@@ -265,7 +265,8 @@ const SmartCargoLogin = () => {
             Continue with SSO
           </button>
 
-          <p className="text-center text-[14px] text-[#aaa] mt-7">
+          {/* ↓ 14px → 12px */}
+          <p className="text-center text-[12px] text-[#aaa] mt-6">
             Don't have an account?{" "}
             <a href="#" className="font-semibold text-[#ff6b1a] no-underline">Request Access</a>
           </p>

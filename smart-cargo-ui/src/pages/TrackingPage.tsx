@@ -91,24 +91,73 @@ const SAMPLE_SHIPMENTS: Shipment[] = [
   },
 ];
 
-const statusLabel: Record<string, string> = {
-  PENDING: "Pending",
-  IN_TRANSIT: "In Transit",
-  DELIVERED: "Delivered",
-  CANCELLED: "Cancelled",
+// ── Status config ─────────────────────────────────────────────────────────────
+const STATUS_STEPS = ["PENDING", "IN_TRANSIT", "DELIVERED"] as const;
+const statusMeta: Record<string, { label: string; color: string; bg: string; dot: string; step: number }> = {
+  PENDING:    { label: "Pending",    color: "text-amber-600",  bg: "bg-amber-50  border-amber-200",  dot: "bg-amber-400",  step: 0 },
+  IN_TRANSIT: { label: "In Transit", color: "text-orange-600", bg: "bg-orange-50 border-orange-200", dot: "bg-orange-500", step: 1 },
+  DELIVERED:  { label: "Delivered",  color: "text-green-600",  bg: "bg-green-50  border-green-200",  dot: "bg-green-500",  step: 2 },
+  CANCELLED:  { label: "Cancelled",  color: "text-red-500",    bg: "bg-red-50    border-red-200",    dot: "bg-red-400",    step: -1 },
 };
 
+const serviceIcon: Record<string, string> = {
+  STANDARD:  "📦",
+  EXPRESS:   "⚡",
+  OVERNIGHT: "🌙",
+};
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+const StatusProgress = ({ status }: { status: string }) => {
+  const meta = statusMeta[status];
+  const step = meta?.step ?? 0;
+  const steps = [
+    { key: "PENDING",    label: "Picked Up",  icon: "📋" },
+    { key: "IN_TRANSIT", label: "In Transit", icon: "🚚" },
+    { key: "DELIVERED",  label: "Delivered",  icon: "✅" },
+  ];
+
+  return (
+    <div className="flex items-center gap-0 w-full">
+      {steps.map((s, i) => {
+        const done    = step > i;
+        const active  = step === i;
+        const last    = i === steps.length - 1;
+        return (
+          <div key={s.key} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-1">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border-2 transition-all ${
+                done   ? "bg-orange-500 border-orange-500 text-white" :
+                active ? "bg-white border-orange-400 text-orange-500 shadow-md shadow-orange-100" :
+                         "bg-white border-gray-200 text-gray-300"
+              }`}>
+                {done ? "✓" : s.icon}
+              </div>
+              <span className={`text-[9px] font-semibold whitespace-nowrap ${
+                done || active ? "text-orange-600" : "text-gray-400"
+              }`}>{s.label}</span>
+            </div>
+            {!last && (
+              <div className={`flex-1 h-0.5 mb-4 mx-1 rounded-full ${done ? "bg-orange-400" : "bg-gray-200"}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 const TrackingPage = () => {
-  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [shipments, setShipments]           = useState<Shipment[]>([]);
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [query, setQuery]                   = useState("");
+  const [loading, setLoading]               = useState(true);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const res = await fetch("/api/shipments");
+        const res  = await fetch("/api/shipments");
         const data = await res.json();
         if (!res.ok || !Array.isArray(data)) throw new Error("No data");
         if (!active) return;
@@ -122,158 +171,164 @@ const TrackingPage = () => {
         if (active) setLoading(false);
       }
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   const filteredShipments = useMemo(
-    () => shipments.filter((shipment) =>
-      shipment.tracking_id.toLowerCase().includes(query.trim().toLowerCase()) ||
-      shipment.receiver_city.toLowerCase().includes(query.trim().toLowerCase()) ||
-      shipment.sender_name.toLowerCase().includes(query.trim().toLowerCase())
+    () => shipments.filter(s =>
+      s.tracking_id.toLowerCase().includes(query.trim().toLowerCase()) ||
+      s.receiver_city.toLowerCase().includes(query.trim().toLowerCase()) ||
+      s.sender_name.toLowerCase().includes(query.trim().toLowerCase())
     ),
     [query, shipments]
   );
 
-  const activeShipment = selectedShipment ?? filteredShipments[0] ?? null;
-  const hubCoords = activeShipment?.current_hub_id
-    ? HUB_COORDS[activeShipment.current_hub_id]
-    : null;
-  const routeTo = activeShipment && activeShipment.delivery_lat !== null && activeShipment.delivery_lng !== null
-    ? { lat: activeShipment.delivery_lat, lng: activeShipment.delivery_lng }
-    : undefined;
+  const active     = selectedShipment ?? filteredShipments[0] ?? null;
+  const hubCoords  = active?.current_hub_id ? HUB_COORDS[active.current_hub_id] : null;
+  const routeTo    = active?.delivery_lat != null && active?.delivery_lng != null
+    ? { lat: active.delivery_lat, lng: active.delivery_lng } : undefined;
+  const meta       = active ? (statusMeta[active.status] ?? statusMeta.PENDING) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-['Poppins',sans-serif]">
-      <div className="max-w-screen-xl mx-auto px-6 py-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div
+      className="flex font-['Poppins',sans-serif] bg-gray-50"
+      style={{ height: "calc(100vh - 64px)" }}   // adjust 64px to your navbar height
+    >
+      {/* ── LEFT: Map (fills remaining space) ─────────────────────────────── */}
+      <div className="relative flex-1 min-w-0">
+        {/* Floating map label */}
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+          <span className="text-orange-500 text-sm">🗺️</span>
           <div>
-            <h1 className="text-1xl font-bold text-gray-900">Live Tracking</h1>
-            <p className="mt-2 text-sm text-gray-500 max-w-2xl">
-              Monitor active shipments in real time. Search by tracking ID, receiver city, or sender name and view the current route.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:w-80">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <Icon.Search />
-              </span>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search shipment..."
-                className="w-full rounded-2xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-800 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-              />
-            </div>
+            <p className="text-xs font-semibold text-gray-800 leading-tight">Route Preview</p>
+            {active && (
+              <p className="text-[10px] text-gray-400 leading-tight">
+                {HUB_NAMES[active.current_hub_id] ?? "Hub"} → {active.receiver_city}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-          <div className="space-y-6">
-            <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-100 bg-gray-50 px-6 py-4">
-                <h2 className="text-md font-semibold text-gray-900">Route Preview</h2>
-                <p className="text-sm text-gray-500 mt-1">Tap a shipment from the list to update the map.</p>
-              </div>
-              <div className="h-[520px] p-6">
-                {activeShipment ? (
-                  <Map
-                    hubCoords={hubCoords}
-                    hubName={hubCoords ? HUB_NAMES[activeShipment.current_hub_id] ?? "Hub" : "Hub"}
-                    routeFrom={hubCoords ?? undefined}
-                    routeTo={routeTo ?? undefined}
-                    lat={routeTo?.lat}
-                    lng={routeTo?.lng}
-                    height="100%"
-                    readOnly
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center rounded-3xl border border-dashed border-orange-200 bg-orange-50 text-center text-orange-700">
-                    No shipment selected.
-                  </div>
-                )}
-              </div>
-            </div>
+        {active ? (
+          <Map
+            key={active._id}
+            hubCoords={hubCoords}
+            hubName={hubCoords ? HUB_NAMES[active.current_hub_id] ?? "Hub" : "Hub"}
+            routeFrom={hubCoords ?? undefined}
+            routeTo={routeTo}
+            lat={routeTo?.lat}
+            lng={routeTo?.lng}
+            height="100%"
+            readOnly
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-orange-50 text-orange-400 text-sm">
+            No shipment selected.
+          </div>
+        )}
+      </div>
 
-            <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-100 bg-gray-50 px-6 py-4">
-                <h2 className="text-md font-semibold text-gray-900">Active Shipments</h2>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {loading ? (
-                  <div className="p-6 text-sm text-gray-500">Loading shipments…</div>
-                ) : filteredShipments.length === 0 ? (
-                  <div className="p-6 text-sm text-gray-500">No shipments match your search.</div>
-                ) : (
-                  filteredShipments.map((shipment) => (
-                    <button
-                      key={shipment._id}
-                      type="button"
-                      onClick={() => setSelectedShipment(shipment)}
-                      className={`w-full text-left px-6 py-4 transition ${
-                        activeShipment?._id === shipment._id ? "bg-orange-50" : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{shipment.tracking_id}</p>
-                          <p className="text-xs text-gray-500">{shipment.receiver_city} • {shipment.sender_name}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-600">
-                            {statusLabel[shipment.status] ?? shipment.status}
-                          </span>
-                          <span className="text-xs text-gray-400">{new Date(shipment.created_at).toLocaleDateString()}</span>
-                        </div>
+      {/* ── RIGHT PANEL ───────────────────────────────────────────────────── */}
+      <div className="w-[380px] shrink-0 flex flex-col bg-white border-l border-gray-100 shadow-xl overflow-hidden">
+
+        {/* Search */}
+        <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Track Shipment</p>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Icon.Search />
+            </span>
+            <input
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="ID, city or sender name…"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-100"
+            />
+          </div>
+        </div>
+
+        {/* Shipment list */}
+        <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+          {loading ? (
+            <div className="p-6 text-sm text-gray-400 text-center">Loading shipments…</div>
+          ) : filteredShipments.length === 0 ? (
+            <div className="p-6 text-sm text-gray-400 text-center">No shipments found.</div>
+          ) : (
+            filteredShipments.map(s => {
+              const sm      = statusMeta[s.status] ?? statusMeta.PENDING;
+              const isActive = active?._id === s._id;
+              return (
+                <button
+                  key={s._id}
+                  type="button"
+                  onClick={() => setSelectedShipment(s)}
+                  className={`w-full text-left px-4 py-3.5 transition-all group ${
+                    isActive ? "bg-orange-50 border-l-2 border-orange-400" : "hover:bg-gray-50 border-l-2 border-transparent"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-xs font-bold text-orange-600 font-mono">{s.tracking_id}</span>
+                        <span className="text-sm">{serviceIcon[s.service_type] ?? "📦"}</span>
                       </div>
-                    </button>
-                  ))
-                )}
-              </div>
+                      <p className="text-xs text-gray-500 truncate">
+                        {s.sender_name} → {s.receiver_city}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {new Date(s.created_at).toLocaleDateString("en-LK", { day: "numeric", month: "short", year: "numeric" })}
+                        {" · "}{s.weight_kg} kg
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${sm.bg} ${sm.color}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${sm.dot}`} />
+                        {sm.label}
+                      </span>
+                      <span className="text-xs text-gray-500 font-semibold">Rs. {s.total_price.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Detail panel for selected shipment */}
+        {active && meta && (
+          <div className="border-t border-gray-100 bg-gray-50 px-4 py-4 space-y-4 shrink-0">
+
+            {/* Status progress */}
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Delivery Progress</p>
+              <StatusProgress status={active.status} />
+            </div>
+
+            {/* Key details grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "Receiver",  value: active.receiver_name },
+                { label: "Phone",     value: active.receiver_phone },
+                { label: "Package",   value: `${active.package_type} · ${active.weight_kg} kg` },
+                { label: "Service",   value: active.service_type },
+                { label: "Hub",       value: HUB_NAMES[active.current_hub_id] ?? active.current_hub_id },
+                { label: "Total",     value: `Rs. ${active.total_price.toLocaleString()}` },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-white rounded-xl px-3 py-2.5 border border-gray-100">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
+                  <p className="text-xs font-semibold text-gray-800 truncate" title={value}>{value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Address */}
+            <div className="bg-white rounded-xl px-3 py-2.5 border border-gray-100">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Delivery Address</p>
+              <p className="text-xs text-gray-700">{active.receiver_address}, {active.receiver_city} {active.receiver_postal_code}</p>
             </div>
           </div>
-
-          <aside className="space-y-6">
-            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-md font-semibold text-gray-900">Shipment details</h2>
-              {activeShipment ? (
-                <div className="mt-4 space-y-4 text-xs text-gray-600">
-                  <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Tracking ID</p>
-                    <p className="mt-2 font-semibold text-gray-900">{activeShipment.tracking_id}</p>
-                  </div>
-                  <div className="grid gap-3 text-xs">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Route</p>
-                      <p className="mt-1 text-gray-900">{HUB_NAMES[activeShipment.current_hub_id] ?? "Origin hub"} → {activeShipment.receiver_city}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Delivery address</p>
-                      <p className="mt-1 text-gray-900">{activeShipment.receiver_address}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Receiver</p>
-                      <p className="mt-1 text-gray-900">{activeShipment.receiver_name}</p>
-                      <p className="text-[10px] text-gray-500">{activeShipment.receiver_phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Package</p>
-                      <p className="mt-1 text-gray-900">{activeShipment.package_type} • {activeShipment.weight_kg} kg</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400">Current status</p>
-                      <p className="mt-1 font-semibold text-orange-600">{statusLabel[activeShipment.status] ?? activeShipment.status}</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <p className="mt-4 text-xs text-gray-500">Select a shipment to see details and live route updates.</p>
-              )}
-            </div>
-          </aside>
-        </div>
+        )}
       </div>
     </div>
   );
